@@ -10,7 +10,7 @@ Inductive nat' : Set :=
   | zero : nat'
   | succ : nat' -> nat'.
 
-Theorem all_have_succ_real : forall x : nat', exists y : nat', (succ x) = y.
+Theorem all_have_succ : forall x : nat', exists y : nat', (succ x) = y.
 Proof.
   intros x.
   exists (succ x).

@@ -1,5 +1,9 @@
 # twitchcoq
 
+Reimplementing a subset of Coq in Python
+
+# random notes
+
 First order logic:
 
 <pre>
