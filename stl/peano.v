@@ -23,7 +23,8 @@ Inductive nat' : Set :=
   | zero : nat'
   | succ : nat' -> nat'.
 
-Inductive eqb' (x : bool') : bool' -> Type :=
+(** Prop is better than Type *)
+Inductive eqb' (x : bool') : bool' -> Prop :=
   | eqb'_refl : eqb' x x.
 
 Definition eqb'' (x y : bool') := match x,y with
@@ -32,7 +33,7 @@ Definition eqb'' (x y : bool') := match x,y with
   | _, _ => False
 end.
 
-Inductive eqn' (x : nat') : nat' -> Type :=
+Inductive eqn' (x : nat') : nat' -> Prop :=
   | eqn'_refl : eqn' x x.
 
 Definition andb' (b1 b2 : bool') : bool' := if b1 then b2 else false.
@@ -76,12 +77,23 @@ Theorem true_is_not_false : not (eqb' true false).
 Proof.
   unfold not.
   intros H.
-  specialize (eqb'_ind true).
+  specialize (eqb'_ind true (fun e: bool' => match e with | true => True | false => False end)).
   intros.
+  assert ((fun e: bool' => match e with | true => True | false => False end) true).
+  reflexivity.
+  specialize (H0 H1).
+  clear H1.
+  specialize (H0 false).
+  specialize (H0 H).
+  clear H.
+  contradiction.
+Qed.
 
 
 
 (**
+  specialize (eqb'_ind true).
+  intros.
   specialize (eqb'_ind true (fun e : bool' => e)).
   assert (eqb' true true).
     reflexivity.
