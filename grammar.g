@@ -4,6 +4,11 @@ sentence : inductive
          | assertion
          | proof
          | definition
+         | stupid
+         | COMMENT
+
+stupid : "Declare" /(.)+/
+       | "Set" /(.)+/
 
 // ident
 FIRST_LETTER : ("a".."z") | ("A".."Z") | "_"
@@ -43,7 +48,7 @@ binder : name
        | "(" name [":" term] ":=" term ")"
 binders : binder+
 
-ind_body : IDENT [binders] ":" term ":=" (["|"] IDENT [binders] ":" term) ("|" IDENT [binders] ":" term)*
+ind_body : IDENT [binders] ":" term ":=" [["|"] IDENT [binders] ":" term] ("|" IDENT [binders] ":" term)*
 inductive : "Inductive" ind_body "."
 
 definition : "Definition" IDENT [binders] [":" term] ":=" term "."
@@ -54,6 +59,6 @@ assertion_keyword : "Theorem" | "Lemma"
 %ignore " "
 %ignore "\n"
 
-COMMENT : "(**" /(.|\n|\r)+/ "*)"
+COMMENT : "(**" /(.|\n)+?/ "*)"
 %ignore COMMENT
 

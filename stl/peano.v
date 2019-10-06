@@ -1,3 +1,14 @@
+(** this makes intros work *)
+Declare ML Module "ltac_plugin".
+Set Default Proof Mode "Classic".
+
+(** False has no items *)
+Inductive False : Prop :=.
+
+(** True has one item *)
+Inductive True : Prop := I : True.
+
+(** bool and nat have two items *)
 Inductive bool' : Set :=
   | true : bool'
   | false : bool'.
@@ -23,7 +34,7 @@ Abort.*)
 
 Theorem demorgan : forall a b : bool', eqb' (notb' (orb' a b)) (andb' (notb' a) (notb' b)).
 Proof.
-  (**intros a b.
-  destruct a; destruct b; simpl; reflexivity.*)
-Abort.
+  intros a b.
+  destruct a; destruct b; simpl; reflexivity.
+Qed.
 
