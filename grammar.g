@@ -2,13 +2,13 @@ start : sentence+
 
 sentence : inductive
          | assertion
-         | proof
          | definition
          | stupid
-         | COMMENT
 
 stupid : "Declare" /(.)+/
        | "Set" /(.)+/
+       | "Reserved" /(.)+/
+       | "Notation" /(.)+/
 
 // ident
 FIRST_LETTER : ("a".."z") | ("A".."Z") | "_"
@@ -20,13 +20,17 @@ name : IDENT | "_"
 // term
 qualid : IDENT | qualid access_ident
 
+PROP : "Prop"
+SET : "Set"
+TYPE : "Type"
+
 arg : term
     | "(" IDENT ":=" term ")"
-sort : "Prop" | "Set" | "Type"  // are this all the same thing?
+sort : PROP | SET | TYPE  // are this all the same thing?
 
 // "exists" and "=" are not a part of the language
 term : "forall" binders "," term
-     | term "->" term
+     | term "->" term  // fake
      | term arg+
      | "if" term "then" term "else" term
      | sort
@@ -53,7 +57,8 @@ inductive : "Inductive" ind_body "."
 
 definition : "Definition" IDENT [binders] [":" term] ":=" term "."
 
-assertion : assertion_keyword IDENT [binders] ":" term "."
+// TODO: does proof belong here?
+assertion : assertion_keyword IDENT [binders] ":" term "." proof
 assertion_keyword : "Theorem" | "Lemma"
 
 %ignore " "
