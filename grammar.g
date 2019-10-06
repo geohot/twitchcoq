@@ -17,12 +17,11 @@ qualid : IDENT | qualid access_ident
 
 arg : term
     | "(" IDENT ":=" term ")"
-sort : "Prop" | "Set" | "Type"
+sort : "Prop" | "Set" | "Type"  // are this all the same thing?
 
+// "exists" and "=" are not a part of the language
 term : "forall" binders "," term
-     | "exists" binders "," term  // not in docs! exists is not forall not...
      | term "->" term
-     | term "=" term  // is equals part of the language?
      | term arg+
      | "if" term "then" term "else" term
      | sort
@@ -44,7 +43,7 @@ binder : name
        | "(" name [":" term] ":=" term ")"
 binders : binder+
 
-ind_body : IDENT [binders] ":" term ":=" ("|" IDENT [binders] ":" term)+
+ind_body : IDENT [binders] ":" term ":=" (["|"] IDENT [binders] ":" term) ("|" IDENT [binders] ":" term)*
 inductive : "Inductive" ind_body "."
 
 definition : "Definition" IDENT [binders] [":" term] ":=" term "."

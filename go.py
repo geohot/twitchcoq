@@ -3,7 +3,9 @@
 from lark import Lark
 
 l = Lark(open("grammar.g").read())
+p = l.parse(open("stl/peano.v").read())
 
-tmp = l.parse(open("stl/peano.v").read())
-print(tmp)
+for x in p.children:
+  print(x.pretty())
+  break
 
