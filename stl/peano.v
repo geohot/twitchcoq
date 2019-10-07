@@ -72,24 +72,17 @@ Proof.
   reflexivity.
   unfold eqb''.*)
 
-(** surprising hard to prove *)
+Definition check (e : bool') : Prop :=
+  match e with
+  | true => True
+  | false => False
+  end.
+
 Theorem true_is_not_false : not (eqb' true false).
 Proof.
-  unfold not.
   intros H.
-  specialize (eqb'_ind true (fun e: bool' => match e with | true => True | false => False end)).
-  intros.
-  assert ((fun e: bool' => match e with | true => True | false => False end) true).
-  reflexivity.
-  specialize (H0 H1).
-  clear H1.
-  specialize (H0 false).
-  specialize (H0 H).
-  clear H.
-  contradiction.
+  exact (eqb'_ind true check I false H).
 Qed.
-
-
 
 (**
   specialize (eqb'_ind true).
