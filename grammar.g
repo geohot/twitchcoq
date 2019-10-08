@@ -9,6 +9,7 @@ stupid : "Declare" /(.)+/
        | "Set" /(.)+/
        | "Reserved" /(.)+/
        | "Notation" /(.)+/
+       | "Print" /(.)+/
 
 // ident
 FIRST_LETTER : ("a".."z") | ("A".."Z") | "_"
@@ -28,6 +29,12 @@ arg : term
     | "(" IDENT ":=" term ")"
 sort : PROP | SET | TYPE  // are this all the same thing?
 
+match_item : term ["as" name] ["in" qualid [pattern]*]
+return_type : "return" term
+pattern : qualid
+mult_pattern : pattern [[","] pattern]*
+equation : mult_pattern [["|"] mult_pattern]* "=>" term
+
 // "exists" and "=" are not a part of the language
 term : "forall" binders "," term
      | term "->" term  // fake
@@ -36,12 +43,10 @@ term : "forall" binders "," term
      | sort
      | qualid
      | "(" term ")"
+     | "match" match_item ["," match_item]* [return_type] "with" [["|"] equation ["|" equation]*] "end"
 
 // this is really wrong
-tactic : name term "."
-       | name "."
-       | name term ";" tactic
-       | name ";" tactic
+tactic : "exact" term "."
 
 proof : "Proof." tactic* ("Qed." | "Abort.")
 
@@ -52,7 +57,7 @@ binder : name
        | "(" name [":" term] ":=" term ")"
 binders : binder+
 
-ind_body : IDENT [binders] ":" term ":=" [["|"] IDENT [binders] ":" term] ("|" IDENT [binders] ":" term)*
+ind_body : IDENT [binders] ":" term ":=" [["|"] IDENT [binders] [":" term]] ("|" IDENT [binders] [":" term])*
 inductive : "Inductive" ind_body "."
 
 definition : "Definition" IDENT [binders] [":" term] ":=" term "."

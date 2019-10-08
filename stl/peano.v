@@ -13,24 +13,46 @@ Inductive empty : Set :=.
 (** bool has two items *)
 (** the bool' was impiled on the type of the items *)
 Inductive bool' : Set :=
-  | true
-  | false.
+  | true : bool'
+  | false : bool'.
 
 (** False has no items *)
 Inductive False : Prop :=.
+Definition not (A:Prop) := A -> False.
 
 (** True has one item *)
 Inductive True : Prop := I : True.
 
-Definition not (A:Prop) := A -> False.
-
-Inductive nat' : Set :=
-  | zero : nat'
-  | succ : nat' -> nat'.
-
 (** Prop is better than Type *)
 Inductive eqb' (x : bool') : bool' -> Prop :=
   | eqb'_refl : eqb' x x.
+
+Theorem true_is_true : eqb' true true.
+Proof.
+  exact (eqb'_refl true).
+Qed.
+
+Definition check (e : bool') : Prop :=
+  match e with
+  | true => True
+  | false => False
+  end.
+
+Theorem true_is_not_false : not (eqb' true false).
+Proof.
+  exact (eqb'_ind true check I false).
+Qed.
+
+(** print the theorems *)
+Print true_is_true.
+Print true_is_not_false.
+
+(** can we prove to here in twitchcoq? CHALLENGE *)
+
+(**Inductive nat' : Set :=
+  | zero : nat'
+  | succ : nat' -> nat'.
+
 
 Definition eqb'' (x y : bool') := match x,y with
   | true, true => True
@@ -41,7 +63,6 @@ end.
 Inductive eqn' (x : nat') : nat' -> Prop :=
   | eqn'_refl : eqn' x x.
 
-(** written using match instead of if *)
 Definition andb' (b1 b2 : bool') : bool' :=
   match b1 with
   | true => b2
@@ -57,17 +78,13 @@ Definition notb' (b1 : bool') : bool' :=
   | true => false
   | false => true
   end.
+*)
 
-Theorem true_is_true : eqb' true true.
-Proof.
-  reflexivity.
-Qed.
-
-Theorem demorgan : forall a b : bool', eqb' (notb' (orb' a b)) (andb' (notb' a) (notb' b)).
+(**Theorem demorgan : forall a b : bool', eqb' (notb' (orb' a b)) (andb' (notb' a) (notb' b)).
 Proof.
   intros a b.
   destruct a; destruct b; simpl; reflexivity.
-Qed.
+Qed.*)
 
 (**Theorem eqb_is_good : forall x y : bool', (eqb'' x y) -> (eqb' x y).
 Proof.
@@ -89,18 +106,6 @@ Proof.
   destruct x; destruct y.
   reflexivity.
   unfold eqb''.*)
-
-Definition check (e : bool') : Prop :=
-  match e with
-  | true => True
-  | false => False
-  end.
-
-Theorem true_is_not_false : not (eqb' true false).
-Proof.
-  intros H.
-  exact (eqb'_ind true check I false H).
-Qed.
 
 (**
   specialize (eqb'_ind true).
