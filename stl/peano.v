@@ -6,10 +6,15 @@ Set Default Proof Mode "Classic".
 Reserved Notation "x -> y" (at level 99, right associativity, y at level 200).
 Notation "A -> B" := (forall (_ : A), B).
 
+(** unit/empty is like True/False, but it's a Set, not a Prop *)
+Inductive unit : Set := tt.
+Inductive empty : Set :=.
+
 (** bool has two items *)
+(** the bool' was impiled on the type of the items *)
 Inductive bool' : Set :=
-  | true : bool'
-  | false : bool'.
+  | true
+  | false.
 
 (** False has no items *)
 Inductive False : Prop :=.
@@ -36,9 +41,22 @@ end.
 Inductive eqn' (x : nat') : nat' -> Prop :=
   | eqn'_refl : eqn' x x.
 
-Definition andb' (b1 b2 : bool') : bool' := if b1 then b2 else false.
-Definition orb' (b1 b2 : bool') : bool' := if b1 then true else b2.
-Definition notb' (b1 : bool') : bool' := if b1 then false else true.
+(** written using match instead of if *)
+Definition andb' (b1 b2 : bool') : bool' :=
+  match b1 with
+  | true => b2
+  | false => false
+  end.
+Definition orb' (b1 b2 : bool') : bool' :=
+  match b1 with
+  | true => true
+  | false => b2
+  end.
+Definition notb' (b1 : bool') : bool' :=
+  match b1 with
+  | true => false
+  | false => true
+  end.
 
 Theorem true_is_true : eqb' true true.
 Proof.
