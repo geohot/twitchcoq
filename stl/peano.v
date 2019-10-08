@@ -38,6 +38,7 @@ Definition check (e : bool') : Prop :=
   | false => False
   end.
 
+
 Theorem true_is_not_false : not (eqb' true false).
 Proof.
   exact (eqb'_ind true check I false).

@@ -20,30 +20,26 @@ name : IDENT | "_"
 
 // term
 qualid : IDENT | qualid access_ident
-
-PROP : "Prop"
-SET : "Set"
-TYPE : "Type"
-
 arg : term
     | "(" IDENT ":=" term ")"
-sort : PROP | SET | TYPE  // are this all the same thing?
+sort : "Prop" | "Set" | "Type"
 
 match_item : term ["as" name] ["in" qualid [pattern]*]
 return_type : "return" term
+
 pattern : qualid
-mult_pattern : pattern [[","] pattern]*
-equation : mult_pattern [["|"] mult_pattern]* "=>" term
+mult_pattern : pattern  // broken
+equation : mult_pattern "=>" term
 
 // "exists" and "=" are not a part of the language
 term : "forall" binders "," term
-     | term "->" term  // fake
-     | term arg+
+     | "match" match_item [return_type] "with" ["|" equation ["|" equation]* ] "end"
      | "if" term "then" term "else" term
+     | "(" term ")"
+     | term "->" term  // fake, this notation is defined
+     | term arg+ // function call
      | sort
      | qualid
-     | "(" term ")"
-     | "match" match_item ["," match_item]* [return_type] "with" [["|"] equation ["|" equation]*] "end"
 
 // this is really wrong
 tactic : "exact" term "."
@@ -69,6 +65,6 @@ assertion_keyword : "Theorem" | "Lemma"
 %ignore " "
 %ignore "\n"
 
-COMMENT : "(**" /(.|\n)+?/ "*)"
+COMMENT : "(*" /(.|\n)+?/ "*)"
 %ignore COMMENT
 

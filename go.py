@@ -20,6 +20,8 @@ def handle_assertion(x):
 
 for x in p.children:
   xx = x.children[0]  # skip sentence
+  print(xx.pretty())
+  """
   stype = xx.data
   if stype == "inductive":
     handle_inductive(xx)
@@ -28,6 +30,7 @@ for x in p.children:
     handle_definition(xx)
   if stype == "assertion":
     handle_assertion(xx)
+  """
 
 
 
