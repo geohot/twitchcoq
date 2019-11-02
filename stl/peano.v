@@ -4,11 +4,13 @@ Set Default Proof Mode "Classic".
 
 (** annoying without this *)
 Reserved Notation "x -> y" (at level 99, right associativity, y at level 200).
-Notation "A -> B" := (forall (_ : A), B).
+
+(** for all x of type T, P *)
+Notation "A -> B" := (forall _ : A, B).
 
 (** unit/empty is like True/False, but it's a Set, not a Prop *)
-Inductive unit : Set := tt.
-Inductive empty : Set :=.
+(**Inductive unit : Set := tt.
+Inductive empty : Set :=.*)
 
 (** bool has two items *)
 (** the bool' was impiled on the type of the items *)
@@ -38,15 +40,32 @@ Definition check (e : bool') : Prop :=
   | false => False
   end.
 
-
 Theorem true_is_not_false : not (eqb' true false).
 Proof.
   exact (eqb'_ind true check I false).
 Qed.
 
+Theorem false_implies_true : False -> True.
+Proof.
+  intros.
+  induction H.
+Qed.
+
+Theorem true_not_implies_false : not (True -> False).
+Proof.
+  unfold not.
+  intros.
+  assert True.
+  exact I.
+  apply H in H0.
+  apply H0.
+Qed.
+
+
 (** print the theorems *)
 Print true_is_true.
 Print true_is_not_false.
+Print false_implies_true.
 
 (** can we prove to here in twitchcoq? CHALLENGE *)
 
