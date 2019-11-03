@@ -17,6 +17,9 @@ class Stack(object):
   def __init__(self):
     self.ss = []
 
+  def __len__(self):
+    return len(self.ss)
+
   def push(self, tyc, ms):
     self.ss.append((tyc, ms))
     print("*** pushed", tyc, lp(ms))
@@ -26,20 +29,45 @@ class Stack(object):
     print("*** popped", ret[0], lp(ret[1]))
     return ret
 
-def verify_proof(tyc, ms, xx):
+def verify_proof(intyc, inms, xx):
   xx = xx.children[0]
   stack = Stack()
   for s in xx.children:
     assert s in asserts
     a = asserts[s]
+    ms = a['ms']
+    bindings = {}
     for e in a['essen'].values():
-      print("must verify", e)
-    stack.push(a['type'], a['ms'])
+      et, enms = stack.pop()
+      assert e['type'] == et
+      print("must verify %s %s is %s %s" % (e['type'], lp(e['ms']), et, lp(enms)))
+      for v, n2 in zip(e['ms'], enms):
+        if v in variables:
+          if v not in bindings:
+            vt, vnms = stack.pop()
+            assert variables[v]['type'] == vt
+            bindings[v] = vnms
+          print(bindings[v], n2)
+        else:
+          assert v == n2
+    nms = []
+    for v in ms:
+      if v in variables:
+        if v not in bindings:
+          vt, vnms = stack.pop()
+          assert variables[v]['type'] == vt
+          bindings[v] = vnms
+        nms += bindings[v]
+      else:
+        # pass through constants
+        nms.append(v)
+    stack.push(a['type'], nms)
 
   # confirm stack is this
   o = stack.pop()
-  print("  produced %s %s expected %s %s" % (o[0], lp(o[1]), tyc, lp(ms)))
-  assert o == (tyc, ms)
+  print("  produced %s %s expected %s %s" % (o[0], lp(o[1]), intyc, lp(inms)))
+  assert(len(stack) == 0)
+  assert o == (intyc, inms)
 
 def parse_stmt(xx):
   if xx.data == "variable_stmt":
@@ -55,6 +83,7 @@ def parse_stmt(xx):
     if xx.data == "floating_stmt":
       var = xx.children[2].children[0]
       assert var in variables
+      # TODO: we are throwing away this name, do we need it?
       variables[var]['type'] = tyc
       #code.interact(local=locals())
       #pass
