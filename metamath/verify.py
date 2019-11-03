@@ -49,6 +49,8 @@ class Stack(object):
 
 def verify_proof(scope, intyc, inms, xx):
   xx = xx.children[0]
+  assert xx.data == "uncompressed_proof"
+
   stack = Stack()
   for s in xx.children:
     bindings = {}
