@@ -1,6 +1,6 @@
-# twitchcoq
+# twitchcoq -- a backspace.ai project
 
-Reimplementing a subset of Coq in Python
+Reimplementing a subset of Coq in Python. 
 
 Just kidding, Coq is too complex. We implemented metamath instead.
 
@@ -12,7 +12,11 @@ We should be able to "run" a metamath program, aka proof without the target. It'
 
 # metamath on search
 
-Take set.mm, remove all $p definitions. Find them with search. Powered by AI(tm)
+Take set.mm, remove all $p definitions. Find them with search. Powered by AI(tm).
+
+"metasmash" written in C++17. First with the intermediate nodes in the graph. Then make it sparser. Then remove it altogether.
+
+How many of the 71 Metamath theorems can we rediscover without the scaffolding?
 
 # random notes
 
@@ -30,4 +34,12 @@ forall y : (fun x : nat -> nat)
 </pre>
 
 Higher order logic...so on and so forth
+
+# randomer notes
+
+Imagine twitch, but VR. We'll rebuild the cybercafes, the revolutionary coffee shops, the old hacker spaces, the town square, the churches, all of the trappings of civilization. But we'll build them in machines. We'll build them in math. We'll build them in homomorphicly encrypted lockers. We'll build them where copies are free, tax is ridiculous, and the only axis on which to compete is quality. True freedom of association.
+
+We need embodiment to be free from the tyranny of owned space. And we need formalization to be secure.
+
+The attacker vs defender battle may have been lost IRL. But in the world of information, the defender seems to win.
 
