@@ -80,14 +80,17 @@ def verify_proof(scope, intyc, inms, xx):
       a = scope.asserts[s]
       ms = a['ms']
       # first bind in essential scope
-      for e in a['scope'].essen:
+      pop = []
+      for e in a['scope'].essen[::-1]:
         et, enms = stack.pop()
         assert e['type'] == et
-        print("must verify %s %s is %s %s" % (e['type'], lp(e['ms']), et, lp(enms)))
-        nms = bind(e['ms'])
+        print("%s: must verify %s %s is %s %s" % (e['lbl'], e['type'], lp(e['ms']), et, lp(enms)))
+        pop.append((et, enms, e['ms'], e['lbl']))
+      for et, enms, ems, lbl in pop:
+        print("working on %s" % lbl)
+        nms = bind(ems)
         print("compare %s to %s" % (lp(nms), lp(enms)))
         assert nms == enms
-
       nms = bind(ms)
       stack.push(a['type'], nms)
     elif s in scope.hypos:
@@ -124,7 +127,7 @@ def parse_stmt(scope, xx):
       scope.hypos[lbl] = {"type": tyc, "ms": [var]}
     elif xx.data == "essential_stmt":
       ms = xx.children[2:]
-      scope.essen.append({"type": tyc, "ms": ms})
+      scope.essen.append({"type": tyc, "ms": ms, "lbl": lbl})
       scope.hypos[lbl] = {"type": tyc, "ms": ms}
   elif xx.data == "assert_stmt":
     xx = xx.children[0]
