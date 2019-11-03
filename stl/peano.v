@@ -6,6 +6,7 @@ Set Default Proof Mode "Classic".
 Reserved Notation "x -> y" (at level 99, right associativity, y at level 200).
 
 (** for all x of type T, P *)
+(** the variable in the forall is _, so this is a non dependent product *)
 Notation "A -> B" := (forall _ : A, B).
 
 (** unit/empty is like True/False, but it's a Set, not a Prop *)
