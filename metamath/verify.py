@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import sys
 import code
-from lark import Lark
+import lark
 
-l = Lark(open("mm.g").read(), parser="lalr")
+l = lark.Lark(open("mm.g").read(), parser="lalr")
 p = l.parse(open("miu2.mm" if len(sys.argv)==1 else sys.argv[1]).read())
 print("*********** LOADED ***********")
 
@@ -47,12 +47,57 @@ class Stack(object):
     print("*** popped", ret[0], lp(ret[1]))
     return ret
 
+def decompress_proof(scope, inms, children):
+  crib = []
+  # get hypothesis for variables
+  for v in inms:
+    # TODO: this is slow
+    for lbl,kk in scope.hypos.items():
+      if kk['ms'] == [v] and kk['floating']:
+        crib.append(lbl)
+  # get essential hypothesis
+  crib += [x['lbl'] for x in scope.essen]
+
+  # add to crib and parse weird numbers
+  nn = []
+  for x in children:
+    if x.type == "LABEL":
+      crib.append(x)
+    else:
+      assert x.type == "COMPRESSED_PROOF_BLOCK"
+      # parse weird numbers
+      acc = 0
+      for c in str(x):
+        if c in 'UVWXY':
+          acc *= 5
+          acc += ord(c) - (ord('U')-1)
+        elif c in 'ABCDEFGHIJKLMNOPQRST':
+          acc *= 20
+          acc += ord(c) - (ord('A')-1)
+          nn.append(acc)
+          acc = 0
+        elif c == "Z":
+          assert False
+
+  ret = []
+  for n in nn:
+    if n-1 < len(crib):
+      ret.append(crib[n-1])
+    else:
+      print(nn)
+      print(crib)
+      assert False
+
+  return ret
+
 def verify_proof(scope, intyc, inms, xx):
   xx = xx.children[0]
-  assert xx.data == "uncompressed_proof"
-
+  if xx.data == "compressed_proof":
+    lbls = decompress_proof(scope, inms, xx.children)
+  else:
+    lbls = xx.children
   stack = Stack()
-  for s in xx.children:
+  for s in lbls:
     bindings = {}
     def bind(ms):
       nms = []
@@ -126,11 +171,11 @@ def parse_stmt(scope, xx):
       # TODO: we are throwing away this name, do we need it?
       assert 'type' not in scope.variables[var]
       scope.variables[var]['type'] = tyc
-      scope.hypos[lbl] = {"type": tyc, "ms": [var]}
+      scope.hypos[lbl] = {"type": tyc, "ms": [var], "floating": True}
     elif xx.data == "essential_stmt":
       ms = xx.children[2:]
       scope.essen.append({"type": tyc, "ms": ms, "lbl": lbl})
-      scope.hypos[lbl] = {"type": tyc, "ms": ms}
+      scope.hypos[lbl] = {"type": tyc, "ms": ms, "floating": False}
   elif xx.data == "assert_stmt":
     xx = xx.children[0]
     lbl = xx.children[0]
