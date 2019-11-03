@@ -52,13 +52,16 @@ def verify_proof(scope, intyc, inms, xx):
   for s in xx.children:
     bindings = {}
     def bind(ms):
-      # then bind in normal scope
       nms = []
       for v in ms[::-1]:
         if v in scope.variables:
           if v not in bindings:
             vt, vnms = stack.pop()
             assert scope.variables[v]['type'] == vt
+            if 'disjoint' in scope.variables[v]:
+              # TODO: check for disjoint
+              # is it here, am i understanding right?
+              pass
             bindings[v] = vnms
           nms.append(bindings[v])
         else:
@@ -74,7 +77,7 @@ def verify_proof(scope, intyc, inms, xx):
       a = scope.asserts[s]
       ms = a['ms']
       # first bind in essential scope
-      for e in a['essen'].values():
+      for e in a['scope'].essen.values():
         et, enms = stack.pop()
         assert e['type'] == et
         print("must verify %s %s is %s %s" % (e['type'], lp(e['ms']), et, lp(enms)))
@@ -126,13 +129,25 @@ def parse_stmt(scope, xx):
     assert tyc in scope.constants
     if xx.data == "axiom_stmt":
       ms = xx.children[2:]
+      proof = None
     elif xx.data == "provable_stmt":
       ms = xx.children[2:-1]
       proof = xx.children[-1]
+      """
       print("verifying proof for %s" % lbl)
       verify_proof(scope, tyc, ms, proof)
       print("verified proof for %s" % lbl)
-    scope.asserts[lbl] = {'type': tyc, 'ms': ms, 'essen': scope.essen.copy()}
+      """
+    scope.asserts[lbl] = {'type': tyc, 'ms': ms, 'scope': scope, 'proof': proof}
+  elif xx.data == "disjoint_stmt":
+    av = [x.children[0] for x in xx.children]
+    for v in av:
+      assert v in scope.variables
+      scope.variables[v]['disjoint'] = [x for x in av if x != v]
+  elif xx.data == "block":
+    tscope = scope.child()
+    for y in xx.children:
+      parse_stmt(tscope, y.children[0])
   else:
     print("IMPLEMENT", xx.data)
     pass
@@ -147,21 +162,12 @@ for x in p.children:
       scope.constants.add(cname)
   else:
     xx = xx.children[0]
-    if xx.data == "block":
-      tscope = scope.child()
-      for y in xx.children:
-        parse_stmt(tscope, y.children[0])
-    else:
-      parse_stmt(scope, xx)
-
-  #print(x.children[0].pretty())
+    parse_stmt(scope, xx)
 
 print("*********** PARSED ***********")
-"""
-print(constants)
-print(variables)
-for k,v in asserts.items():
-  print(k,v)
-"""
-
+for k,v in scope.asserts.items():
+  if v['proof'] is not None:
+    print("******** verify %s" % k)
+    verify_proof(v['scope'], v['type'], v['ms'], v['proof'])
+print("*********** VERIFIED ***********")
 
