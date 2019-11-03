@@ -3,7 +3,7 @@ import sys
 import code
 from lark import Lark
 
-l = Lark(open("mm.g").read())
+l = Lark(open("mm.g").read(), parser="lalr")
 p = l.parse(open("miu2.mm" if len(sys.argv)==1 else sys.argv[1]).read())
 print("*********** LOADED ***********")
 
