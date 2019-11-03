@@ -6,7 +6,7 @@ stmt : block | variable_stmt | disjoint_stmt | hypothesis_stmt | assert_stmt
 block : "${" stmt* "$}"
 
 variable_stmt : "$v" variable+ "$."
-disjoint_stmt : "$d" variable variable variable+ "$."
+disjoint_stmt : "$d" variable variable variable* "$."
 hypothesis_stmt : floating_stmt | essential_stmt
 
 floating_stmt : LABEL "$f" typecode variable "$."
@@ -27,7 +27,7 @@ constant : MATH_SYMBOL
 variable : MATH_SYMBOL
 
 _LCHAR : ("a".."z") | ("A".."Z") | ("0".."9") | "." | "-" | "_"
-_CHAR : ("a".."z") | ("A".."Z") | ("0".."9") | "'" | "_" | "|" | "-"
+_CHAR : ("a".."z") | ("A".."Z") | ("0".."9") | "'" | "_" | "|" | "-" | "+" | "*" | "=" | "<" | ">" | "(" | ")" | "." | ":" | "," | "\\" | "[" | "]" | "/" | "~" | "!" | "?" | "@"
 
 MATH_SYMBOL : _CHAR+
 LABEL : _LCHAR+
