@@ -49,12 +49,19 @@ class Stack(object):
 
 def decompress_proof(scope, inms, children):
   crib = []
-  # get hypothesis for variables
-  for v in inms:
-    # TODO: this is slow
+  def maybe_add_v(v):
     for lbl,kk in scope.hypos.items():
       if kk['ms'] == [v] and kk['floating']:
-        crib.append(lbl)
+        if lbl not in crib:
+          crib.append(lbl)
+
+  # get hypothesis for variables
+  #for v in inms:
+  #  maybe_add_v(v)
+  for e in scope.essen:
+    for v in e['ms']:
+      maybe_add_v(v)
+
   # get essential hypothesis
   crib += [x['lbl'] for x in scope.essen]
 
