@@ -36,5 +36,6 @@ COMPRESSED_PROOF_BLOCK : (("A".."Z") | "?")+
 %ignore " "
 %ignore "\n"
 
-
+COMMENT : "$(" /(.|\n)+?/ "$)"
+%ignore COMMENT
 

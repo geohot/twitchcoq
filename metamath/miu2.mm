@@ -31,6 +31,11 @@ ${
   IV  $a |- x y $.
 $}
 
+t1 $p |- M I $=
+  ax
+$.
+
+$(
 theorem1 $p |- M U I I U $=
   we wM wU wI we wI wU
     we wU wI wU
@@ -44,4 +49,5 @@ theorem1 $p |- M U I I U $=
     II
   IV
 $.
+$)
 
