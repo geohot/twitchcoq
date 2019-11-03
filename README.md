@@ -2,6 +2,8 @@
 
 Reimplementing a subset of Coq in Python
 
+Just kidding, Coq is too complex. We implemented metamath instead.
+
 # random notes
 
 First order logic:
