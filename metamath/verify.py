@@ -37,30 +37,35 @@ def verify_proof(intyc, inms, xx):
     a = asserts[s]
     ms = a['ms']
     bindings = {}
-    for e in a['essen'].values():
-      et, enms = stack.pop()
-      assert e['type'] == et
-      print("must verify %s %s is %s %s" % (e['type'], lp(e['ms']), et, lp(enms)))
-      for v, n2 in zip(e['ms'], enms):
+
+    def bind(ms):
+      # then bind in normal scope
+      nms = []
+      for v in ms[::-1]:
         if v in variables:
           if v not in bindings:
             vt, vnms = stack.pop()
             assert variables[v]['type'] == vt
             bindings[v] = vnms
-          print(bindings[v], n2)
+          nms.append(bindings[v])
         else:
-          assert v == n2
-    nms = []
-    for v in ms:
-      if v in variables:
-        if v not in bindings:
-          vt, vnms = stack.pop()
-          assert variables[v]['type'] == vt
-          bindings[v] = vnms
-        nms += bindings[v]
-      else:
-        # pass through constants
-        nms.append(v)
+          # pass through constants
+          nms.append([v])
+      ret = []
+      for x in nms[::-1]:
+        ret += x
+      return ret
+
+    # first bind in essential scope
+    for e in a['essen'].values():
+      et, enms = stack.pop()
+      assert e['type'] == et
+      print("must verify %s %s is %s %s" % (e['type'], lp(e['ms']), et, lp(enms)))
+      nms = bind(e['ms'])
+      print("compare %s to %s" % (lp(nms), lp(enms)))
+      assert nms == enms
+
+    nms = bind(ms)
     stack.push(a['type'], nms)
 
   # confirm stack is this

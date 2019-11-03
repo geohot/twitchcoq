@@ -39,7 +39,6 @@ lesstrivial $p |- M I I $=
   we wI ax II
 $.
 
-$(
 theorem1 $p |- M U I I U $=
   we wM wU wI we wI wU
     we wU wI wU
@@ -53,5 +52,4 @@ theorem1 $p |- M U I I U $=
     II
   IV
 $.
-$)
 
