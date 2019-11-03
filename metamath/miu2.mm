@@ -31,8 +31,12 @@ ${
   IV  $a |- x y $.
 $}
 
-t1 $p |- M I $=
+trivial $p |- M I $=
   ax
+$.
+
+lesstrivial $p |- M I I $=
+  we wI ax II
 $.
 
 $(
