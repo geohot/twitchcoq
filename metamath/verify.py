@@ -16,6 +16,7 @@ class Scope(object):
     self.variables = list()
     self.horder = list()
     self.vtypes = dict()
+    self.disjoints = set()
     self.essen = list()
 
   def child(self):
@@ -27,6 +28,7 @@ class Scope(object):
     ret.variables = self.variables[:]
     ret.horder = self.horder[:]
     ret.vtypes = self.vtypes.copy()
+    ret.disjoints = self.disjoints.copy()
 
     ret.hypos = self.hypos.copy()
     ret.essen = self.essen[:]
@@ -135,12 +137,9 @@ def verify_proof(scope, intyc, inms, xx):
         vt, vnms = stack.pop()
         assert v in scope.vtypes
         assert scope.vtypes[v] == vt
-        #if 'disjoint' in scope.variables[v]:
-          # TODO: check for disjoint
-          # is it here, am i understanding right?
-          #pass
         print("  bind %s to %s" % (v, lp(vnms)))
         bindings[v] = vnms
+
     def bind(scope, ms):
       nms = []
       for v in ms:
@@ -176,18 +175,34 @@ def verify_proof(scope, intyc, inms, xx):
       print("binding [%s]" % lp(tvars))
       for v in tvars[::-1]:
         do_bind(a['scope'], v)
+
+      # verify disjoints
+      for v1, v2 in a['scope'].disjoints:
+        if v1 in bindings and v2 in bindings:
+          bv1 = bindings[v1]
+          bv2 = bindings[v2]
+          print("%s -> %s, %s -> %s" % (v1, lp(bv1), v2, lp(bv2)))
+          for bvv1 in bv1:
+            if bvv1 in a['scope'].variables:
+              for bvv2 in bv2:
+                if bvv2 in a['scope'].variables:
+                  # confirm bvv1 and bvv2 are disjoint in current scope
+                  print("verify %s %s disjoint" % (bvv1, bvv2))
+                  f1 = (bvv1, bvv2) in scope.disjoints
+                  f2 = (bvv2, bvv1) in scope.disjoints
+                  assert f1 or f2
+
       # parse essential
       for et, enms, ems, lbl in pop:
         print("working on %s" % lbl)
         nms = bind(a['scope'], ems)
         print("compare %s to %s" % (lp(nms), lp(enms)))
         assert nms == enms
-      nms = bind(a['scope'], ms)
-      stack.push(a['type'], nms)
+
+      stack.push(a['type'], bind(a['scope'], ms))
     elif s in scope.hypos:
       a = scope.hypos[s]
       # don't bind variables
-      #sys.stdout.write(" %f ")
       stack.push(a['type'], a['ms'])
     elif type(s) == int:
       oot, ooms = refs[s-1]
@@ -196,7 +211,6 @@ def verify_proof(scope, intyc, inms, xx):
     else:
       raise Exception("%s label not found" % s)
     refs.append(stack.peek())
-
 
   # confirm stack is this
   o = stack.pop()
@@ -242,9 +256,11 @@ def parse_stmt(scope, xx):
   elif xx.data == "disjoint_stmt":
     # if we don't check this, it should still verify, just sometimes wrongly
     av = [x.children[0] for x in xx.children]
-    for v in av:
-      assert v in scope.variables
-      #scope.variables[v]['disjoint'] = [x for x in av if x != v]
+    for v1 in av:
+      assert v1 in scope.variables
+      for v2 in av:
+        if v1 != v2 and (v1,v2) not in scope.disjoints and (v2,v1) not in scope.disjoints:
+          scope.disjoints.add((v1, v2))
   elif xx.data == "block":
     tscope = scope.child()
     for y in xx.children:
