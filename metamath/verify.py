@@ -76,25 +76,29 @@ def decompress_proof(scope, inms, children):
   # add to crib and parse weird numbers
   nn = []
   zz = []
+  cc = []
   for x in children:
     if x.type == "LABEL":
       crib.append(x)
     else:
       assert x.type == "COMPRESSED_PROOF_BLOCK"
-      # parse weird numbers
+      cc.append(str(x))
+
+  # parse weird numbers
+  acc = 0
+  for c in ''.join(cc):
+    if c in 'UVWXY':
+      acc *= 5
+      acc += ord(c) - (ord('U')-1)
+    elif c in 'ABCDEFGHIJKLMNOPQRST':
+      acc *= 20
+      acc += ord(c) - (ord('A')-1)
+      nn.append(acc)
       acc = 0
-      for c in str(x):
-        if c in 'UVWXY':
-          acc *= 5
-          acc += ord(c) - (ord('U')-1)
-        elif c in 'ABCDEFGHIJKLMNOPQRST':
-          acc *= 20
-          acc += ord(c) - (ord('A')-1)
-          nn.append(acc)
-          acc = 0
-        elif c == "Z":
-          zz.append(len(nn))
-  print(len(crib), len(zz))
+    elif c == "Z":
+      assert acc == 0
+      zz.append(len(nn))
+  #print(len(crib), len(zz))
   ret = []
   for n in nn:
     i = n-1
@@ -106,6 +110,7 @@ def decompress_proof(scope, inms, children):
     else:
       print("out of range", i)
       assert False
+    #print(len(ret), n, ret[-1])
   return ret
 
 def verify_proof(scope, intyc, inms, xx):
@@ -156,8 +161,8 @@ def verify_proof(scope, intyc, inms, xx):
 
       for e in a['scope'].essen[::-1]:
         et, enms = stack.pop()
-        assert e['type'] == et
         print("%s: must verify %s %s is %s %s" % (e['lbl'], e['type'], lp(e['ms']), et, lp(enms)))
+        assert e['type'] == et
         pop.append((et, enms, e['ms'], e['lbl']))
 
       # early binding
@@ -184,6 +189,7 @@ def verify_proof(scope, intyc, inms, xx):
     elif s in scope.hypos:
       a = scope.hypos[s]
       # don't bind variables
+      #sys.stdout.write(" %f ")
       stack.push(a['type'], a['ms'])
     elif type(s) == int:
       oot, ooms = refs[s-1]
@@ -235,6 +241,7 @@ def parse_stmt(scope, xx):
       proof = xx.children[-1]
     scope.asserts[lbl] = {'type': tyc, 'ms': ms, 'scope': scope.child(), 'proof': proof}
   elif xx.data == "disjoint_stmt":
+    # if we don't check this, it should still verify, just sometimes wrongly
     av = [x.children[0] for x in xx.children]
     for v in av:
       assert v in scope.variables
