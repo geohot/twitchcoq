@@ -12,7 +12,8 @@ class Scope(object):
     self.constants = set()
     self.asserts = dict()
     self.hypos = dict()
-    self.variables = dict()
+    self.variables = list()
+    self.vtypes = dict()
     self.essen = list()
 
   def child(self):
@@ -22,6 +23,7 @@ class Scope(object):
 
     ret.constants = self.constants.copy()
     ret.variables = self.variables.copy()
+    ret.vtypes = self.vtypes.copy()
 
     ret.hypos = self.hypos.copy()
     ret.essen = self.essen.copy()
@@ -66,7 +68,7 @@ def decompress_proof(scope, inms, children):
   #  maybe_add_v(v)
 
   # i don't think this is right, introduction order?
-  crib = sorted(crib)
+  crib = sorted(crib, key=lambda x: scope.variables.index(scope.hypos[x]['ms'][0]))
 
   # get essential hypothesis
   crib += [x['lbl'] for x in scope.essen]
@@ -120,12 +122,12 @@ def verify_proof(scope, intyc, inms, xx):
     def do_bind(v):
       if v not in bindings:
         vt, vnms = stack.pop()
-        assert 'type' in scope.variables[v]
-        assert scope.variables[v]['type'] == vt
-        if 'disjoint' in scope.variables[v]:
+        assert v in scope.vtypes
+        assert scope.vtypes[v] == vt
+        #if 'disjoint' in scope.variables[v]:
           # TODO: check for disjoint
           # is it here, am i understanding right?
-          pass
+          #pass
         print("  bind %s to %s" % (v, lp(vnms)))
         bindings[v] = vnms
     def bind(ms):
@@ -161,7 +163,7 @@ def verify_proof(scope, intyc, inms, xx):
         for v in e['ms']:
           if v in scope.variables and v not in tvars:
             tvars.append(v)
-      tvars = sorted(tvars)  # lol, same ish
+      tvars = sorted(tvars, key=lambda x: scope.variables.index(x))  # lol, same ish
       print("binding", lp(tvars))
       for v in tvars[::-1]:
         do_bind(v)
@@ -197,7 +199,7 @@ def parse_stmt(scope, xx):
     for y in xx.children:
       vname = y.children[0]
       assert vname not in scope.variables
-      scope.variables[vname] = {}
+      scope.variables.append(vname)
   elif xx.data == "hypothesis_stmt":
     xx = xx.children[0]
     lbl = xx.children[0]
@@ -207,8 +209,8 @@ def parse_stmt(scope, xx):
       var = xx.children[2].children[0]
       assert var in scope.variables
       # TODO: we are throwing away this name, do we need it?
-      assert 'type' not in scope.variables[var]
-      scope.variables[var]['type'] = tyc
+      assert var not in scope.vtypes
+      scope.vtypes[var] = tyc
       scope.hypos[lbl] = {"type": tyc, "ms": [var], "floating": True}
     elif xx.data == "essential_stmt":
       ms = xx.children[2:]
@@ -230,7 +232,7 @@ def parse_stmt(scope, xx):
     av = [x.children[0] for x in xx.children]
     for v in av:
       assert v in scope.variables
-      scope.variables[v]['disjoint'] = [x for x in av if x != v]
+      #scope.variables[v]['disjoint'] = [x for x in av if x != v]
   elif xx.data == "block":
     tscope = scope.child()
     for y in xx.children:
