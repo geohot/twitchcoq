@@ -118,7 +118,7 @@ def verify_proof(scope, intyc, inms, xx):
   refs = []
   stack = Stack()
   for ii, s in enumerate(lbls):
-    sys.stdout.write("  proof(%d) %s -> " % (ii, s))
+    sys.stdout.write("  proof(%d) %s -> " % (ii+1, s))
     bindings = {}
     def do_bind(v):
       if v not in bindings:
