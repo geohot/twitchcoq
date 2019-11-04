@@ -163,8 +163,11 @@ def verify_proof(scope, intyc, inms, xx):
         for v in e['ms']:
           if v in scope.variables and v not in tvars:
             tvars.append(v)
+      for v in ms:
+        if v in scope.variables and v not in tvars:
+          tvars.append(v)
       tvars = sorted(tvars, key=lambda x: scope.variables.index(x))  # lol, same ish
-      print("binding", lp(tvars))
+      print("binding [%s]" % lp(tvars))
       for v in tvars[::-1]:
         do_bind(v)
       # parse essential
