@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import print_function
 import sys
 import code
 import lark
@@ -22,11 +23,11 @@ class Scope(object):
     ret.asserts = self.asserts
 
     ret.constants = self.constants.copy()
-    ret.variables = self.variables.copy()
+    ret.variables = self.variables[:]
     ret.vtypes = self.vtypes.copy()
 
     ret.hypos = self.hypos.copy()
-    ret.essen = self.essen.copy()
+    ret.essen = self.essen[:]
 
     return ret
 
@@ -146,6 +147,8 @@ def verify_proof(scope, intyc, inms, xx):
           nms.append(bindings[v])
         else:
           # pass through constants
+          if v not in scope.constants:
+            print("WTF", v, "ISN'T A CONSTANT")
           assert v in scope.constants
           nms.append([v])
       ret = []
