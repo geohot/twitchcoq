@@ -4,6 +4,8 @@ Reimplementing a subset of Coq in Python.
 
 Just kidding, Coq is too complex. We implemented metamath instead.
 
+It (slowly) verifies set.mm as of 11/3/2019
+
 Ideally, Coq and friends should be rewritten in metamath. It's really the future, just wish it looked better. But omg, this is the proper stack for formal math, "formalism" is alive and well and is the truth in philosophy.
 
 # metamath as execution
