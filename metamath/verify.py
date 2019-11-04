@@ -111,7 +111,7 @@ def decompress_proof(scope, inms, children):
     else:
       print("out of range", i)
       assert False
-    #print(len(ret), n, ret[-1])
+    print(len(ret), n, ret[-1])
   return ret
 
 def verify_proof(scope, intyc, inms, xx):
@@ -126,7 +126,7 @@ def verify_proof(scope, intyc, inms, xx):
   for ii, s in enumerate(lbls):
     sys.stdout.write("  proof(%d) %s -> " % (ii+1, s))
     bindings = {}
-    def do_bind(v):
+    def do_bind(scope, v):
       if v not in bindings:
         vt, vnms = stack.pop()
         assert v in scope.vtypes
@@ -137,9 +137,9 @@ def verify_proof(scope, intyc, inms, xx):
           #pass
         print("  bind %s to %s" % (v, lp(vnms)))
         bindings[v] = vnms
-    def bind(ms):
+    def bind(scope, ms):
       nms = []
-      for v in ms[::-1]:
+      for v in ms:
         if v in scope.variables:
           assert v in bindings
           # late binding no longer supported
@@ -148,11 +148,11 @@ def verify_proof(scope, intyc, inms, xx):
         else:
           # pass through constants
           if v not in scope.constants:
-            print("WTF", v, "ISN'T A CONSTANT")
+            print("WTF", v, "ISN'T A CONSTANT", lp(ms))
           assert v in scope.constants
           nms.append([v])
       ret = []
-      for x in nms[::-1]:
+      for x in nms:
         ret += x
       return ret
 
@@ -172,22 +172,22 @@ def verify_proof(scope, intyc, inms, xx):
       tvars = []
       for e in a['scope'].essen:
         for v in e['ms']:
-          if v in scope.variables and v not in tvars:
+          if v in a['scope'].variables and v not in tvars:
             tvars.append(v)
       for v in ms:
-        if v in scope.variables and v not in tvars:
+        if v in a['scope'].variables and v not in tvars:
           tvars.append(v)
-      tvars = sorted(tvars, key=lambda x: scope.variables.index(x))  # lol, same ish
+      tvars = sorted(tvars, key=lambda x: a['scope'].variables.index(x))  # lol, same ish
       print("binding [%s]" % lp(tvars))
       for v in tvars[::-1]:
-        do_bind(v)
+        do_bind(a['scope'], v)
       # parse essential
       for et, enms, ems, lbl in pop:
         print("working on %s" % lbl)
-        nms = bind(ems)
+        nms = bind(a['scope'], ems)
         print("compare %s to %s" % (lp(nms), lp(enms)))
         assert nms == enms
-      nms = bind(ms)
+      nms = bind(a['scope'], ms)
       stack.push(a['type'], nms)
     elif s in scope.hypos:
       a = scope.hypos[s]
