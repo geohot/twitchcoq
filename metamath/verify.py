@@ -55,34 +55,30 @@ class Stack(object):
   def peek(self):
     return self.ss[-1]
 
+def variables_in_scope(scope, ms):
+  tvars = []
+  for e in scope.essen:
+    for v in e['ms']:
+      if v in scope.variables and v not in tvars:
+        tvars.append(v)
+  for v in ms:
+    if v in scope.variables and v not in tvars:
+      tvars.append(v)
+  return sorted(tvars, key=lambda x: scope.horder.index(x))
+
 def decompress_proof(scope, inms, children):
   crib = []
-  def maybe_add_v(v):
+  for v in variables_in_scope(scope, inms):
     for lbl,kk in scope.hypos.items():
       if kk['ms'] == [v] and kk['floating']:
         if lbl not in crib:
           crib.append(lbl)
-
-  # get hypothesis for variables
-  for e in scope.essen:
-    for v in e['ms']:
-      maybe_add_v(v)
-  for v in inms:
-    maybe_add_v(v)
-
-  # i don't think this is right, introduction order?
-  crib = sorted(crib, key=lambda x: scope.horder.index(scope.hypos[x]['ms'][0]))
-
-  #    wph wps vx vy vz c.pl cB cX cO
-  # vs wph wps vx vy vz cB c.pl cX cO
 
   # get essential hypothesis
   crib += [x['lbl'] for x in scope.essen]
   print(lp(crib))
 
   # add to crib and parse weird numbers
-  nn = []
-  zz = []
   cc = []
   for x in children:
     if x.type == "LABEL":
@@ -92,6 +88,8 @@ def decompress_proof(scope, inms, children):
       cc.append(str(x))
 
   # parse weird numbers
+  nn = []
+  zz = []
   acc = 0
   for c in ''.join(cc):
     if c in 'UVWXY':
@@ -147,9 +145,8 @@ def verify_proof(scope, intyc, inms, xx):
       nms = []
       for v in ms:
         if v in scope.variables:
-          assert v in bindings
           # late binding no longer supported
-          #do_bind(v)
+          assert v in bindings
           nms.append(bindings[v])
         else:
           # pass through constants
@@ -175,15 +172,7 @@ def verify_proof(scope, intyc, inms, xx):
         pop.append((et, enms, e['ms'], e['lbl']))
 
       # early binding
-      tvars = []
-      for e in a['scope'].essen:
-        for v in e['ms']:
-          if v in a['scope'].variables and v not in tvars:
-            tvars.append(v)
-      for v in ms:
-        if v in a['scope'].variables and v not in tvars:
-          tvars.append(v)
-      tvars = sorted(tvars, key=lambda x: a['scope'].horder.index(x))  # lol, same ish
+      tvars = variables_in_scope(a['scope'], ms)
       print("binding [%s]" % lp(tvars))
       for v in tvars[::-1]:
         do_bind(a['scope'], v)
