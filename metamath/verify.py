@@ -179,18 +179,12 @@ def verify_proof(scope, intyc, inms, xx):
       # verify disjoints
       for v1, v2 in a['scope'].disjoints:
         if v1 in bindings and v2 in bindings:
-          bv1 = bindings[v1]
-          bv2 = bindings[v2]
-          print("%s -> %s, %s -> %s" % (v1, lp(bv1), v2, lp(bv2)))
-          for bvv1 in bv1:
-            if bvv1 in a['scope'].variables:
-              for bvv2 in bv2:
-                if bvv2 in a['scope'].variables:
-                  # confirm bvv1 and bvv2 are disjoint in current scope
-                  print("verify %s %s disjoint" % (bvv1, bvv2))
-                  f1 = (bvv1, bvv2) in scope.disjoints
-                  f2 = (bvv2, bvv1) in scope.disjoints
-                  assert f1 or f2
+          for bvv1 in [x for x in bindings[v1] if x in a['scope'].variables]:
+            for bvv2 in [x for x in bindings[v2] if x in a['scope'].variables]:
+              # confirm bvv1 and bvv2 are disjoint in current scope
+              print("verify %s %s disjoint" % (bvv1, bvv2))
+              assert (bvv1, bvv2) in scope.disjoints or \
+                     (bvv2, bvv1) in scope.disjoints
 
       # parse essential
       for et, enms, ems, lbl in pop:
