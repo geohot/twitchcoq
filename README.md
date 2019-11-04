@@ -20,6 +20,8 @@ Take set.mm, remove all $p definitions. Find them with search. Powered by AI(tm)
 
 How many of the 71 Metamath theorems can we rediscover without the scaffolding?
 
+Hmm, https://github.com/dwhalen/holophrasm
+
 # random notes
 
 First order logic:
