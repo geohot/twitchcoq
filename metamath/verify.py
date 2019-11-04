@@ -47,6 +47,9 @@ class Stack(object):
     print("*** popped", ret[0], lp(ret[1]))
     return ret
 
+  def peek(self):
+    return self.ss[-1]
+
 def decompress_proof(scope, inms, children):
   crib = []
   def maybe_add_v(v):
@@ -71,6 +74,7 @@ def decompress_proof(scope, inms, children):
 
   # add to crib and parse weird numbers
   nn = []
+  zz = []
   for x in children:
     if x.type == "LABEL":
       crib.append(x)
@@ -88,17 +92,17 @@ def decompress_proof(scope, inms, children):
           nn.append(acc)
           acc = 0
         elif c == "Z":
-          assert False
+          zz.append(len(nn))
 
   ret = []
   for n in nn:
     if n-1 < len(crib):
       ret.append(crib[n-1])
+    elif n-1 < len(crib)+len(zz):
+      z = zz[n-1-len(crib)]
+      ret.append(z)
     else:
-      print(nn)
-      print(crib)
       assert False
-
   return ret
 
 def verify_proof(scope, intyc, inms, xx):
@@ -107,26 +111,28 @@ def verify_proof(scope, intyc, inms, xx):
     lbls = decompress_proof(scope, inms, xx.children)
   else:
     lbls = xx.children
+  print(lp(lbls))
+  refs = []
   stack = Stack()
-  for s in lbls:
-    sys.stdout.write("  proof %s -> " % s)
+  for ii, s in enumerate(lbls):
+    sys.stdout.write("  proof(%d) %s -> " % (ii, s))
     bindings = {}
     def do_bind(v):
-      vt, vnms = stack.pop()
-      assert 'type' in scope.variables[v]
-      assert scope.variables[v]['type'] == vt
-      if 'disjoint' in scope.variables[v]:
-        # TODO: check for disjoint
-        # is it here, am i understanding right?
-        pass
-      print("  bind %s to %s" % (v, lp(vnms)))
-      bindings[v] = vnms
+      if v not in bindings:
+        vt, vnms = stack.pop()
+        assert 'type' in scope.variables[v]
+        assert scope.variables[v]['type'] == vt
+        if 'disjoint' in scope.variables[v]:
+          # TODO: check for disjoint
+          # is it here, am i understanding right?
+          pass
+        print("  bind %s to %s" % (v, lp(vnms)))
+        bindings[v] = vnms
     def bind(ms):
       nms = []
       for v in ms[::-1]:
         if v in scope.variables:
-          if v not in bindings:
-            do_bind(v)
+          do_bind(v)
           nms.append(bindings[v])
         else:
           # pass through constants
@@ -155,9 +161,10 @@ def verify_proof(scope, intyc, inms, xx):
         for v in e['ms']:
           if v in scope.variables and v not in tvars:
             tvars.append(v)
+      tvars = sorted(tvars)  # lol, same ish
+      print("binding", lp(tvars))
       for v in tvars[::-1]:
         do_bind(v)
-
       # parse essential
       for et, enms, ems, lbl in pop:
         print("working on %s" % lbl)
@@ -170,8 +177,13 @@ def verify_proof(scope, intyc, inms, xx):
       a = scope.hypos[s]
       # don't bind variables
       stack.push(a['type'], a['ms'])
+    elif type(s) == int:
+      oot, ooms = refs[s-1]
+      print("load ref", s, oot, lp(ooms))
+      stack.push(oot, ooms)
     else:
       raise Exception("%s label not found" % s)
+    refs.append(stack.peek())
 
 
   # confirm stack is this
@@ -213,11 +225,6 @@ def parse_stmt(scope, xx):
     elif xx.data == "provable_stmt":
       ms = xx.children[2:-1]
       proof = xx.children[-1]
-      """
-      print("verifying proof for %s" % lbl)
-      verify_proof(scope, tyc, ms, proof)
-      print("verified proof for %s" % lbl)
-      """
     scope.asserts[lbl] = {'type': tyc, 'ms': ms, 'scope': scope.child(), 'proof': proof}
   elif xx.data == "disjoint_stmt":
     av = [x.children[0] for x in xx.children]
