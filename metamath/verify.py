@@ -64,15 +64,14 @@ def decompress_proof(scope, inms, children):
   for e in scope.essen:
     for v in e['ms']:
       maybe_add_v(v)
-  #for v in inms:
-  #  maybe_add_v(v)
+  for v in inms:
+    maybe_add_v(v)
 
   # i don't think this is right, introduction order?
   crib = sorted(crib, key=lambda x: scope.variables.index(scope.hypos[x]['ms'][0]))
 
   # get essential hypothesis
   crib += [x['lbl'] for x in scope.essen]
-  print(crib)
 
   # add to crib and parse weird numbers
   nn = []
@@ -95,15 +94,17 @@ def decompress_proof(scope, inms, children):
           acc = 0
         elif c == "Z":
           zz.append(len(nn))
-
+  print(len(crib), len(zz))
   ret = []
   for n in nn:
-    if n-1 < len(crib):
-      ret.append(crib[n-1])
-    elif n-1 < len(crib)+len(zz):
-      z = zz[n-1-len(crib)]
+    i = n-1
+    if i < len(crib):
+      ret.append(crib[i])
+    elif i < len(crib)+len(zz):
+      z = zz[i-len(crib)]
       ret.append(z)
     else:
+      print("out of range", i)
       assert False
   return ret
 
@@ -134,7 +135,9 @@ def verify_proof(scope, intyc, inms, xx):
       nms = []
       for v in ms[::-1]:
         if v in scope.variables:
-          do_bind(v)
+          assert v in bindings
+          # late binding no longer supported
+          #do_bind(v)
           nms.append(bindings[v])
         else:
           # pass through constants
