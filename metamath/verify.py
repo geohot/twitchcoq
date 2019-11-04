@@ -56,14 +56,18 @@ def decompress_proof(scope, inms, children):
           crib.append(lbl)
 
   # get hypothesis for variables
-  #for v in inms:
-  #  maybe_add_v(v)
   for e in scope.essen:
     for v in e['ms']:
       maybe_add_v(v)
+  #for v in inms:
+  #  maybe_add_v(v)
+
+  # i don't think this is right, introduction order?
+  crib = sorted(crib)
 
   # get essential hypothesis
   crib += [x['lbl'] for x in scope.essen]
+  print(crib)
 
   # add to crib and parse weird numbers
   nn = []
@@ -105,21 +109,24 @@ def verify_proof(scope, intyc, inms, xx):
     lbls = xx.children
   stack = Stack()
   for s in lbls:
+    sys.stdout.write("  proof %s -> " % s)
     bindings = {}
+    def do_bind(v):
+      vt, vnms = stack.pop()
+      assert 'type' in scope.variables[v]
+      assert scope.variables[v]['type'] == vt
+      if 'disjoint' in scope.variables[v]:
+        # TODO: check for disjoint
+        # is it here, am i understanding right?
+        pass
+      print("  bind %s to %s" % (v, lp(vnms)))
+      bindings[v] = vnms
     def bind(ms):
       nms = []
       for v in ms[::-1]:
         if v in scope.variables:
           if v not in bindings:
-            vt, vnms = stack.pop()
-            assert 'type' in scope.variables[v]
-            assert scope.variables[v]['type'] == vt
-            if 'disjoint' in scope.variables[v]:
-              # TODO: check for disjoint
-              # is it here, am i understanding right?
-              pass
-            print("  bind %s to %s" % (v, lp(vnms)))
-            bindings[v] = vnms
+            do_bind(v)
           nms.append(bindings[v])
         else:
           # pass through constants
@@ -135,11 +142,23 @@ def verify_proof(scope, intyc, inms, xx):
       ms = a['ms']
       # first bind in essential scope
       pop = []
+
       for e in a['scope'].essen[::-1]:
         et, enms = stack.pop()
         assert e['type'] == et
         print("%s: must verify %s %s is %s %s" % (e['lbl'], e['type'], lp(e['ms']), et, lp(enms)))
         pop.append((et, enms, e['ms'], e['lbl']))
+
+      # early binding
+      tvars = []
+      for e in a['scope'].essen:
+        for v in e['ms']:
+          if v in scope.variables and v not in tvars:
+            tvars.append(v)
+      for v in tvars[::-1]:
+        do_bind(v)
+
+      # parse essential
       for et, enms, ems, lbl in pop:
         print("working on %s" % lbl)
         nms = bind(ems)
@@ -199,7 +218,7 @@ def parse_stmt(scope, xx):
       verify_proof(scope, tyc, ms, proof)
       print("verified proof for %s" % lbl)
       """
-    scope.asserts[lbl] = {'type': tyc, 'ms': ms, 'scope': scope, 'proof': proof}
+    scope.asserts[lbl] = {'type': tyc, 'ms': ms, 'scope': scope.child(), 'proof': proof}
   elif xx.data == "disjoint_stmt":
     av = [x.children[0] for x in xx.children]
     for v in av:
