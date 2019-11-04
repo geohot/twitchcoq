@@ -183,6 +183,7 @@ def verify_proof(scope, intyc, inms, xx):
             for bvv2 in [x for x in bindings[v2] if x in a['scope'].variables]:
               # confirm bvv1 and bvv2 are disjoint in current scope
               print("verify %s %s disjoint" % (bvv1, bvv2))
+              assert bvv1 != bvv2
               assert (bvv1, bvv2) in scope.disjoints or \
                      (bvv2, bvv1) in scope.disjoints
 
