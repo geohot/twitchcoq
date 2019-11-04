@@ -37,7 +37,7 @@ Higher order logic...so on and so forth
 
 # randomer notes
 
-Imagine twitch, but VR. We'll rebuild the cybercafes, the revolutionary coffee shops, the old hacker spaces, the town square, the churches, all of the trappings of civilization. But we'll build them in machines. We'll build them in math. We'll build them in homomorphicly encrypted lockers. We'll build them where copies are free, tax is ridiculous, removing your landlord is a fork, and the only axis on which to compete is quality. True freedom of association.
+Imagine twitch, but VR. We'll rebuild the cybercafes, the revolutionary coffee shops, the old hacker spaces, the town square, the churches, all of the trappings of civilization. But we'll build them in machines. We'll build them in math. We'll build them in homomorphically encrypted lockers. We'll build them where copies are free, tax is ridiculous, removing your landlord is a fork, and the only axis on which to compete is quality. True freedom of association.
 
 We need embodiment to be free from the tyranny of owned space. And we need formalization to be secure.
 
