@@ -14,6 +14,7 @@ class Scope(object):
     self.asserts = dict()
     self.hypos = dict()
     self.variables = list()
+    self.horder = list()
     self.vtypes = dict()
     self.essen = list()
 
@@ -24,6 +25,7 @@ class Scope(object):
 
     ret.constants = self.constants.copy()
     ret.variables = self.variables[:]
+    ret.horder = self.horder[:]
     ret.vtypes = self.vtypes.copy()
 
     ret.hypos = self.hypos.copy()
@@ -69,10 +71,14 @@ def decompress_proof(scope, inms, children):
     maybe_add_v(v)
 
   # i don't think this is right, introduction order?
-  crib = sorted(crib, key=lambda x: scope.variables.index(scope.hypos[x]['ms'][0]))
+  crib = sorted(crib, key=lambda x: scope.horder.index(scope.hypos[x]['ms'][0]))
+
+  #    wph wps vx vy vz c.pl cB cX cO
+  # vs wph wps vx vy vz cB c.pl cX cO
 
   # get essential hypothesis
   crib += [x['lbl'] for x in scope.essen]
+  print(lp(crib))
 
   # add to crib and parse weird numbers
   nn = []
@@ -111,7 +117,7 @@ def decompress_proof(scope, inms, children):
     else:
       print("out of range", i)
       assert False
-    print(len(ret), n, ret[-1])
+    #print(len(ret), n, ret[-1])
   return ret
 
 def verify_proof(scope, intyc, inms, xx):
@@ -177,7 +183,7 @@ def verify_proof(scope, intyc, inms, xx):
       for v in ms:
         if v in a['scope'].variables and v not in tvars:
           tvars.append(v)
-      tvars = sorted(tvars, key=lambda x: a['scope'].variables.index(x))  # lol, same ish
+      tvars = sorted(tvars, key=lambda x: a['scope'].horder.index(x))  # lol, same ish
       print("binding [%s]" % lp(tvars))
       for v in tvars[::-1]:
         do_bind(a['scope'], v)
@@ -227,6 +233,7 @@ def parse_stmt(scope, xx):
       assert var not in scope.vtypes
       scope.vtypes[var] = tyc
       scope.hypos[lbl] = {"type": tyc, "ms": [var], "floating": True}
+      scope.horder.append(var)
     elif xx.data == "essential_stmt":
       ms = xx.children[2:]
       scope.essen.append({"type": tyc, "ms": ms, "lbl": lbl})
