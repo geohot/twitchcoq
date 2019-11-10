@@ -5,16 +5,28 @@ import sys
 import code
 import lark
 import logging
+import argparse
+import traceback
 from tqdm import tqdm
 
-logging.basicConfig(level=logging.DEBUG, format='%(message)s')
+parser = argparse.ArgumentParser(description='Verify metamath')
+parser.add_argument('-r', '--repl', action='store_true')
+parser.add_argument('-v', '--verbose', action='store_true')
+parser.add_argument('-d', '--debug', action='store_true')
+parser.add_argument('file', type=str)
+args = parser.parse_args()
+
+logging.basicConfig(level=logging.WARNING, format='%(message)s')
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.WARNING)
+if args.debug:
+  log.setLevel(logging.DEBUG)
+elif args.verbose:
+  log.setLevel(logging.INFO)
 
-path = os.path.dirname(os.path.abspath(__file__))
-l = lark.Lark(open(os.path.join(path, "mm.g")).read(), parser="lalr")
-p = l.parse(open(os.path.join(path, "miu2.mm") if len(sys.argv)==1 else sys.argv[1]).read())
+grammar = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "mm.g")).read()
+l = lark.Lark(grammar, parser="lalr")
+p = l.parse(open(args.file).read())
 log.info("*********** LOADED ***********")
 
 class Scope(object):
@@ -291,12 +303,19 @@ for k,v in pbar:
       lbls = decompress_proof(scope, inms, xx.children)
     else:
       lbls = xx.children
-    log.debug(lp(lbls))
-
+    log.info(lp(lbls))
     o = exec_metamath(v['scope'], lbls)
-
-    log.debug("  produced %s %s expected %s %s" % (o[0], lp(o[1]), v['type'], lp(v['ms'])))
+    log.info("  produced %s %s expected %s %s" % (o[0], lp(o[1]), v['type'], lp(v['ms'])))
     assert o == (v['type'], v['ms'])
-
 log.info("*********** VERIFIED ***********")
+
+if args.repl:
+  print("entering repl")
+  while True:
+    lbls = [lark.lexer.Token(value=x, type_="LABEL") for x in input('lbls> ').split(" ")]
+    try:
+      o = exec_metamath(v['scope'], lbls)
+      print(o[0], lp(o[1]))
+    except Exception:
+      traceback.print_exc()
 
