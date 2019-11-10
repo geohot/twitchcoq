@@ -6,6 +6,6 @@ ANTLR_FILES = env.Command(
   action = env.Action(
   "java -jar ~/Downloads/antlr-4.7.2-complete.jar -o out -Dlanguage=Cpp Math.g",
   "Generating antlr"))
-
-env.Program('a.out', ['main.cc']+ANTLR_FILES, LIBS='antlr4-runtime')
+SOURCE_FILES = ["main.cc"]
+env.Program('a.out', SOURCE_FILES+ANTLR_FILES, LIBS='antlr4-runtime')
 

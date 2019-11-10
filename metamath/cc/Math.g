@@ -35,6 +35,6 @@ MATH_SYMBOL : CHAR+ ;
 LABEL : LCHAR+ ;
 COMPRESSED_PROOF_BLOCK : (('A'..'Z') | '?')+ ;
 
-COMMENT : '$(' /(.|'\n')+?/ '$)';
-WHITESPACE : ' ' | '\n' | '\t' | '\r';
+COMMENT : '$(' /(.|'\n')+?/ '$)' ;
+WHITESPACE : ' ' | '\n' | '\t' | '\r' ;
 
