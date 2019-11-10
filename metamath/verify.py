@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 from __future__ import print_function
+import os
 import sys
 import code
 import lark
+path = os.path.dirname(os.path.abspath(__file__))
 
-l = lark.Lark(open("mm.g").read(), parser="lalr")
-p = l.parse(open("miu2.mm" if len(sys.argv)==1 else sys.argv[1]).read())
+l = lark.Lark(open(os.path.join(path, "mm.g")).read(), parser="lalr")
+p = l.parse(open(os.path.join(path, "miu2.mm") if len(sys.argv)==1 else sys.argv[1]).read())
 print("*********** LOADED ***********")
 
 class Scope(object):

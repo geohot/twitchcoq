@@ -29,8 +29,8 @@ variable : MATH_SYMBOL
 LCHAR : ("a".."z") | ("A".."Z") | ("0".."9") | "." | "-" | "_"
 CHAR : LCHAR | "'" | "|" | "+" | "*" | "=" | "<" | ">" | "(" | ")" | ":" | "," | "\\" | "[" | "]" | "/" | "~" | "!" | "?" | "@" | "&" | "{" | "}" | "^" | "`" | "\"" | ";" | "#"
 
-MATH_SYMBOL : CHAR+
 LABEL : LCHAR+
+MATH_SYMBOL : CHAR+
 COMPRESSED_PROOF_BLOCK : (("A".."Z") | "?")+
 
 COMMENT : "$(" /(.|\n)+?/ "$)"
