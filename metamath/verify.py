@@ -129,13 +129,7 @@ def decompress_proof(scope, inms, children):
     #print(len(ret), n, ret[-1])
   return ret
 
-def verify_proof(scope, intyc, inms, xx):
-  xx = xx.children[0]
-  if xx.data == "compressed_proof":
-    lbls = decompress_proof(scope, inms, xx.children)
-  else:
-    lbls = xx.children
-  log.debug(lp(lbls))
+def exec_metamath(scope, lbls):
   refs = []
   stack = Stack()
   for ii, s in enumerate(lbls):
@@ -217,10 +211,9 @@ def verify_proof(scope, intyc, inms, xx):
     refs.append(stack.peek())
 
   # confirm stack is this
-  o = stack.pop()
-  log.debug("  produced %s %s expected %s %s" % (o[0], lp(o[1]), intyc, lp(inms)))
+  ret = stack.pop()
   assert(len(stack) == 0)
-  assert o == (intyc, inms)
+  return ret
 
 def parse_stmt(scope, xx):
   if xx.data == "variable_stmt":
@@ -291,6 +284,19 @@ for k,v in pbar:
   if v['proof'] is not None:
     pbar.set_description(k)
     log.info("******** verify %s" % k)
-    verify_proof(v['scope'], v['type'], v['ms'], v['proof'])
+
+    # get proof labels
+    xx = v['proof'].children[0]
+    if xx.data == "compressed_proof":
+      lbls = decompress_proof(scope, inms, xx.children)
+    else:
+      lbls = xx.children
+    log.debug(lp(lbls))
+
+    o = exec_metamath(v['scope'], lbls)
+
+    log.debug("  produced %s %s expected %s %s" % (o[0], lp(o[1]), v['type'], lp(v['ms'])))
+    assert o == (v['type'], v['ms'])
+
 log.info("*********** VERIFIED ***********")
 
