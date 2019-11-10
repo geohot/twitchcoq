@@ -4,11 +4,17 @@ import os
 import sys
 import code
 import lark
-path = os.path.dirname(os.path.abspath(__file__))
+import logging
 
+logging.basicConfig(level=logging.DEBUG, format='%(message)s')
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
+
+path = os.path.dirname(os.path.abspath(__file__))
 l = lark.Lark(open(os.path.join(path, "mm.g")).read(), parser="lalr")
 p = l.parse(open(os.path.join(path, "miu2.mm") if len(sys.argv)==1 else sys.argv[1]).read())
-print("*********** LOADED ***********")
+log.info("*********** LOADED ***********")
 
 class Scope(object):
   def __init__(self):
@@ -49,11 +55,11 @@ class Stack(object):
 
   def push(self, tyc, ms):
     self.ss.append((tyc, ms))
-    print("*** pushed", tyc, lp(ms))
+    log.debug("*** pushed {} {}".format(tyc, lp(ms)))
 
   def pop(self):
     ret = self.ss.pop()
-    print("*** popped", ret[0], lp(ret[1]))
+    log.debug("*** popped {} {}".format(ret[0], lp(ret[1])))
     return ret
 
   def peek(self):
@@ -80,7 +86,7 @@ def decompress_proof(scope, inms, children):
 
   # get essential hypothesis
   crib += [x['lbl'] for x in scope.essen]
-  print(lp(crib))
+  log.debug(lp(crib))
 
   # add to crib and parse weird numbers
   cc = []
@@ -117,7 +123,7 @@ def decompress_proof(scope, inms, children):
       z = zz[i-len(crib)]
       ret.append(z)
     else:
-      print("out of range", i)
+      log.error("out of range", i)
       assert False
     #print(len(ret), n, ret[-1])
   return ret
@@ -128,18 +134,18 @@ def verify_proof(scope, intyc, inms, xx):
     lbls = decompress_proof(scope, inms, xx.children)
   else:
     lbls = xx.children
-  print(lp(lbls))
+  log.debug(lp(lbls))
   refs = []
   stack = Stack()
   for ii, s in enumerate(lbls):
-    sys.stdout.write("  proof(%d) %s -> " % (ii+1, s))
+    log.debug("  proof(%d) %s -> " % (ii+1, s))
     bindings = {}
     def do_bind(scope, v):
       if v not in bindings:
         vt, vnms = stack.pop()
         assert v in scope.vtypes
         assert scope.vtypes[v] == vt
-        print("  bind %s to %s" % (v, lp(vnms)))
+        log.debug("  bind %s to %s" % (v, lp(vnms)))
         bindings[v] = vnms
 
     def bind(scope, ms):
@@ -152,7 +158,7 @@ def verify_proof(scope, intyc, inms, xx):
         else:
           # pass through constants
           if v not in scope.constants:
-            print("WTF", v, "ISN'T A CONSTANT", lp(ms))
+            log.warning("WTF", v, "ISN'T A CONSTANT", lp(ms))
           assert v in scope.constants
           nms.append([v])
       ret = []
@@ -168,13 +174,13 @@ def verify_proof(scope, intyc, inms, xx):
 
       for e in a['scope'].essen[::-1]:
         et, enms = stack.pop()
-        print("%s: must verify %s %s is %s %s" % (e['lbl'], e['type'], lp(e['ms']), et, lp(enms)))
+        log.debug("%s: must verify %s %s is %s %s" % (e['lbl'], e['type'], lp(e['ms']), et, lp(enms)))
         assert e['type'] == et
         pop.append((et, enms, e['ms'], e['lbl']))
 
       # early binding
       tvars = variables_in_scope(a['scope'], ms)
-      print("binding [%s]" % lp(tvars))
+      log.debug("binding [%s]" % lp(tvars))
       for v in tvars[::-1]:
         do_bind(a['scope'], v)
 
@@ -184,16 +190,16 @@ def verify_proof(scope, intyc, inms, xx):
           for bvv1 in [x for x in bindings[v1] if x in a['scope'].variables]:
             for bvv2 in [x for x in bindings[v2] if x in a['scope'].variables]:
               # confirm bvv1 and bvv2 are disjoint in current scope
-              print("verify %s %s disjoint" % (bvv1, bvv2))
+              log.debug("verify %s %s disjoint" % (bvv1, bvv2))
               assert bvv1 != bvv2
               assert (bvv1, bvv2) in scope.disjoints or \
                      (bvv2, bvv1) in scope.disjoints
 
       # parse essential
       for et, enms, ems, lbl in pop:
-        print("working on %s" % lbl)
+        log.debug("working on %s" % lbl)
         nms = bind(a['scope'], ems)
-        print("compare %s to %s" % (lp(nms), lp(enms)))
+        log.debug("compare %s to %s" % (lp(nms), lp(enms)))
         assert nms == enms
 
       stack.push(a['type'], bind(a['scope'], ms))
@@ -203,7 +209,7 @@ def verify_proof(scope, intyc, inms, xx):
       stack.push(a['type'], a['ms'])
     elif type(s) == int:
       oot, ooms = refs[s-1]
-      print("load ref", s, oot, lp(ooms))
+      log.debug("load ref", s, oot, lp(ooms))
       stack.push(oot, ooms)
     else:
       raise Exception("%s label not found" % s)
@@ -211,7 +217,7 @@ def verify_proof(scope, intyc, inms, xx):
 
   # confirm stack is this
   o = stack.pop()
-  print("  produced %s %s expected %s %s" % (o[0], lp(o[1]), intyc, lp(inms)))
+  log.debug("  produced %s %s expected %s %s" % (o[0], lp(o[1]), intyc, lp(inms)))
   assert(len(stack) == 0)
   assert o == (intyc, inms)
 
@@ -263,7 +269,7 @@ def parse_stmt(scope, xx):
     for y in xx.children:
       parse_stmt(tscope, y.children[0])
   else:
-    print("IMPLEMENT", xx.data)
+    log.error("IMPLEMENT", xx.data)
     pass
 
 scope = Scope()
@@ -278,10 +284,10 @@ for x in p.children:
     xx = xx.children[0]
     parse_stmt(scope, xx)
 
-print("*********** PARSED ***********")
+log.info("*********** PARSED ***********")
 for k,v in scope.asserts.items():
   if v['proof'] is not None:
-    print("******** verify %s" % k)
+    log.info("******** verify %s" % k)
     verify_proof(v['scope'], v['type'], v['ms'], v['proof'])
-print("*********** VERIFIED ***********")
+log.info("*********** VERIFIED ***********")
 
