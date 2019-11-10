@@ -1,12 +1,11 @@
 env = Environment(CCFLAGS="-std=c++17", CPPPATH='/usr/local/Cellar/antlr4-cpp-runtime/4.7.2/include/antlr4-runtime')
-GEN_FILES = ["out/MathParser.cpp", "out/MathLexer.cpp", "out/MathBaseListener.cpp", "out/MathListener.cpp"]
 
-env.Command(
-  target=GEN_FILES,
+ANTLR_FILES = env.Command(
+  target=["out/MathParser.cpp", "out/MathLexer.cpp", "out/MathBaseListener.cpp", "out/MathListener.cpp"],
   source="Math.g",
   action = env.Action(
   "java -jar ~/Downloads/antlr-4.7.2-complete.jar -o out -Dlanguage=Cpp Math.g",
   "Generating antlr"))
 
-env.Program('a.out', ['main.cc']+GEN_FILES, LIBS='antlr4-runtime')
+env.Program('a.out', ['main.cc']+ANTLR_FILES, LIBS='antlr4-runtime')
 
