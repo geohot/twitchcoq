@@ -26,21 +26,7 @@ elif args.verbose:
 
 grammar = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "mm.g")).read()
 l = lark.Lark(grammar, parser="lalr")
-dat = open(args.file).read()
-
-# deal with includes in the "preprocessor"
-mdat = []
-for xx in dat.split("$["):
-  if "$]" in xx:
-    t0, t1 = xx.split("$]", 1)
-    fn = t0.strip()
-    log.info("including %s" % fn)
-    mdat.append(open(fn).read())
-    mdat.append(t1)
-  else:
-    mdat.append(xx)
-
-p = l.parse(''.join(mdat))
+p = l.parse(open(args.file).read())
 log.info("*********** LOADED ***********")
 
 class Scope(object):
@@ -150,7 +136,7 @@ def decompress_proof(scope, inms, children):
       z = zz[i-len(crib)]
       ret.append(z)
     else:
-      log.error("out of range", i)
+      log.error("out of range {}".format(i))
       assert False
     #print(len(ret), n, ret[-1])
   return ret
@@ -293,16 +279,22 @@ def parse_stmt(scope, xx):
     pass
 
 scope = Scope()
-for x in p.children:
-  xx = x.children[0]
-  if xx.data == "constant_stmt":
-    for y in xx.children:
-      cname = y.children[0]
-      assert cname not in scope.constants
-      scope.constants.add(cname)
-  else:
-    xx = xx.children[0]
-    parse_stmt(scope, xx)
+
+def parse(p):
+  for x in p.children:
+    xx = x.children[0]
+    if xx.data == "constant_stmt":
+      for y in xx.children:
+        cname = y.children[0]
+        assert cname not in scope.constants
+        scope.constants.add(cname)
+    elif xx.data == "include_stmt":
+      fn = str(xx.children[0])
+      log.info("including %s" % fn)
+      parse(l.parse(open(fn).read()))
+    else:
+      parse_stmt(scope, xx.children[0])
+parse(p)
 
 log.info("*********** PARSED ***********")
 pbar = tqdm(scope.asserts.items())
@@ -314,7 +306,7 @@ for k,v in pbar:
     # get proof labels
     xx = v['proof'].children[0]
     if xx.data == "compressed_proof":
-      lbls = decompress_proof(scope, inms, xx.children)
+      lbls = decompress_proof(v['scope'], v['ms'], xx.children)
     else:
       lbls = xx.children
     log.info(lp(lbls))

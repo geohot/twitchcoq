@@ -1,5 +1,7 @@
 start : outermost_scope_stmt*
-outermost_scope_stmt : constant_stmt | stmt
+outermost_scope_stmt : include_stmt | constant_stmt | stmt
+
+include_stmt : "$[" MATH_SYMBOL "$]"
 constant_stmt : "$c" constant+ "$."
 
 stmt : block | variable_stmt | disjoint_stmt | hypothesis_stmt | assert_stmt
