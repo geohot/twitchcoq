@@ -12,30 +12,32 @@ disjoint_stmt : '$d' variable variable variable* '$.' ;
 hypothesis_stmt : floating_stmt | essential_stmt ;
 
 floating_stmt : LABEL '$f' typecode variable '$.' ;
-essential_stmt : LABEL '$e' typecode MATH_SYMBOL* '$.' ;
+essential_stmt : LABEL '$e' typecode math_symbol* '$.' ;
 
 assert_stmt : axiom_stmt | provable_stmt ;
 
-axiom_stmt : LABEL '$a' typecode MATH_SYMBOL* '$.' ;
-provable_stmt : LABEL '$p' typecode MATH_SYMBOL* '$=' proof '$.' ;
+axiom_stmt : LABEL '$a' typecode math_symbol* '$.' ;
+provable_stmt : LABEL '$p' typecode math_symbol* '$=' proof '$.' ;
 
 proof : uncompressed_proof | compressed_proof ;
-uncompressed_proof : (LABEL | '?')+ ;
-compressed_proof : '(' LABEL* ')' COMPRESSED_PROOF_BLOCK+ ;
+uncompressed_proof : math_symbol+ ; // LABEL or ?
+compressed_proof : MATHWORD LABEL* MATHWORD math_symbol+ ;
+// note, this has to verify by hand, LABEL/MATHWORD are too forgiving
 
 typecode : constant ;
 
-constant : MATH_SYMBOL ;
-variable : MATH_SYMBOL ;
+constant : math_symbol ;
+variable : math_symbol ;
+
+math_symbol : (LABEL | MATHWORD) ;
 
 fragment LCHAR : ('a'..'z') | ('A'..'Z') | ('0'..'9') | '.' | '-' | '_' ;
 fragment CHAR : LCHAR | '\'' | '|' | '+' | '*' | '=' | '<' | '>' | '(' | ')' | ':' | ',' | '\\' | '[' | ']' | '/' | '~' | '!' | '?' | '@' | '&' | '{' | '}' | '^' | '`' | '"' | ';' | '#' ;
 
-MATH_SYMBOL : CHAR+ ;
 LABEL : LCHAR+ ;
-COMPRESSED_PROOF_BLOCK : (('A'..'Z') | '?')+ ;
+MATHWORD : CHAR+ ;
 
-COMMENT : '$(' /(.|'\n')+?/ '$)' -> skip ;
+COMMENT : '$(' .*? '$)' -> skip ;
 WHITESPACE : (' ' | '\n' | '\t' | '\r')+ -> skip ;
 
 
