@@ -1,3 +1,4 @@
 out
 a.out
+*.o
 .sconsign.dblite
