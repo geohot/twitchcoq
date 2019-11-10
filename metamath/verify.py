@@ -311,10 +311,13 @@ log.info("*********** VERIFIED ***********")
 
 if args.repl:
   print("entering repl")
+  print("asserts:", lp(scope.asserts))
+  print("constants:", lp(scope.constants))
+  print("variables:", lp(scope.variables))
   while True:
     lbls = [lark.lexer.Token(value=x, type_="LABEL") for x in input('lbls> ').split(" ")]
     try:
-      o = exec_metamath(v['scope'], lbls)
+      o = exec_metamath(scope, lbls)
       print(o[0], lp(o[1]))
     except Exception:
       traceback.print_exc()

@@ -5,5 +5,5 @@ install:
 
 script:
   # keep it simple and fast for now
-  - cd metamath && ./verify.py && ./verify.py simple.mm && ./verify.py simple2.mm
+  - cd metamath && ./verify.py miu2.mm && ./verify.py simple.mm && ./verify.py simple2.mm
   #- cd metamath && ./test.sh
