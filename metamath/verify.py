@@ -329,10 +329,12 @@ if args.repl:
     readline.parse_and_bind("tab: complete")
 
   while True:
-    lbls = [lark.lexer.Token(value=x, type_="LABEL") for x in input('lbls> ').split(" ")]
-    try:
-      o = exec_metamath(scope, lbls)
-      print(o[0], lp(o[1]))
-    except Exception:
-      traceback.print_exc()
+    ind = input('lbls> ').strip()
+    if len(ind) > 0:
+      lbls = [lark.lexer.Token(value=x, type_="LABEL") for x in ind.split(" ")]
+      try:
+        o = exec_metamath(scope, lbls)
+        print(o[0], lp(o[1]))
+      except Exception:
+        traceback.print_exc()
 
