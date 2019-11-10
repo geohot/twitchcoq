@@ -26,7 +26,21 @@ elif args.verbose:
 
 grammar = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "mm.g")).read()
 l = lark.Lark(grammar, parser="lalr")
-p = l.parse(open(args.file).read())
+dat = open(args.file).read()
+
+# deal with includes in the "preprocessor"
+mdat = []
+for xx in dat.split("$["):
+  if "$]" in xx:
+    t0, t1 = xx.split("$]", 1)
+    fn = t0.strip()
+    log.info("including %s" % fn)
+    mdat.append(open(fn).read())
+    mdat.append(t1)
+  else:
+    mdat.append(xx)
+
+p = l.parse(''.join(mdat))
 log.info("*********** LOADED ***********")
 
 class Scope(object):
@@ -314,6 +328,14 @@ if args.repl:
   print("asserts:", lp(scope.asserts))
   print("constants:", lp(scope.constants))
   print("variables:", lp(scope.variables))
+  try:
+    import readline
+  except ImportError:
+    pass
+  else:
+    import rlcompleter
+    readline.parse_and_bind("tab: complete")
+
   while True:
     lbls = [lark.lexer.Token(value=x, type_="LABEL") for x in input('lbls> ').split(" ")]
     try:
