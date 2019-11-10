@@ -5,11 +5,12 @@ import sys
 import code
 import lark
 import logging
+from tqdm import tqdm
 
 logging.basicConfig(level=logging.DEBUG, format='%(message)s')
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
+log.setLevel(logging.WARNING)
 
 path = os.path.dirname(os.path.abspath(__file__))
 l = lark.Lark(open(os.path.join(path, "mm.g")).read(), parser="lalr")
@@ -285,8 +286,10 @@ for x in p.children:
     parse_stmt(scope, xx)
 
 log.info("*********** PARSED ***********")
-for k,v in scope.asserts.items():
+pbar = tqdm(scope.asserts.items())
+for k,v in pbar:
   if v['proof'] is not None:
+    pbar.set_description(k)
     log.info("******** verify %s" % k)
     verify_proof(v['scope'], v['type'], v['ms'], v['proof'])
 log.info("*********** VERIFIED ***********")
