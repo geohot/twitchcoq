@@ -1,4 +1,4 @@
-grammar start;
+grammar Math;
 
 start : outermost_scope_stmt* ;
 outermost_scope_stmt : constant_stmt | stmt ;

@@ -1,0 +1,4 @@
+import glob
+env = Environment(CCFLAGS="-std=c++17", CPPPATH='/usr/local/Cellar/antlr4-cpp-runtime/4.7.2/include/antlr4-runtime')
+env.Program('a.out', ['main.cc']+glob.glob('out/*.cpp'), LIBS='antlr4-runtime')
+
