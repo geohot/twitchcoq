@@ -151,6 +151,8 @@ def exec_metamath(scope, lbls):
       if v not in bindings:
         vt, vnms = stack.pop()
         assert v in scope.vtypes
+        if scope.vtypes[v] != vt:
+          log.warning("  expected type %s, got type %s while binding %s to %s" % (scope.vtypes[v], vt, v, lp(vnms)))
         assert scope.vtypes[v] == vt
         log.debug("  bind %s to %s" % (v, lp(vnms)))
         bindings[v] = vnms
