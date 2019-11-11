@@ -412,6 +412,7 @@ def search(scope, ty, ms, d=0):
 def tokenize(ind, type_):
   return [lark.lexer.Token(value=x, type_=type_) for x in ind.split(" ")]
 
+"""
 #ms = tokenize("wff not = 0 S x", "MATH_SYMBOL")
 #ms = tokenize("wff not = 0 S t", "MATH_SYMBOL")
 ms = tokenize("wff = 0 0", "MATH_SYMBOL")
@@ -422,6 +423,7 @@ ret = search(scope, ms[0], ms[1:])
 print(lp(ret))
 t = exec_metamath(scope, ret).pop()
 print(t[0], lp(t[1]))
+"""
 
 if args.repl:
   print("entering repl")
