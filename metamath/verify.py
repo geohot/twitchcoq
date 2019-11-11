@@ -320,7 +320,7 @@ for k,v in pbar:
     assert o == (v['type'], v['ms'])
 log.info("*********** VERIFIED ***********")
 
-def search(scope, ty, ms):
+def search_forward(scope, ty, ms):
   print("asserts: %d hypos: %d" % (len(scope.asserts), len(scope.hypos)))
   all_lbls = [lark.lexer.Token(value=x, type_="LABEL") for x in list(scope.asserts.keys())+list(scope.hypos.keys())]
   ok = [[],]
@@ -344,6 +344,85 @@ def search(scope, ty, ms):
           #traceback.print_exc()
           pass
 
+def can_produce(scope, tms, ms, d):
+  var = variables_in_scope(scope, tms)
+  #print("CAN", lp(tms), "PRODUCE", lp(ms), "REPLACING", lp(var))
+  p0, p1 = 0, 0
+  binds = {}
+  while p0 < len(tms) and p1 < len(ms):
+    if tms[p0] not in var:
+      if tms[p0] == ms[p1]:
+        p0 += 1
+        p1 += 1
+      else:
+        return None
+    elif tms[p0] in binds:
+      b = binds[tms[p0]]
+      if b[1] == ms[p1:p1+len(b[1])]:
+        p0 += 1
+        p1 += len(b[1])
+      else:
+        return None
+    else:
+      # tms[p0] is a var
+      # 1 symbol replaced for now
+      # this is an issue
+      for l in range(1, len(ms)-p1+1):
+        if tms[p0] not in binds:
+          qret = search(scope, scope.vtypes[tms[p0]], ms[p1:p1+l], d+1)
+          if qret is not None:
+            binds[tms[p0]] = (scope.vtypes[tms[p0]], ms[p1:p1+l], qret)
+            p0 += 1
+            p1 += l
+            break
+      else:
+        return None
+  if p0 != len(tms) or p1 != len(ms):
+    return None
+  return binds
+
+def search(scope, ty, ms, d=0):
+  if d == 10:
+    return None
+  print("  "*d+"searching for", ty, lp(ms))
+  for k,x in scope.hypos.items():
+    # hypothesis must be exact
+    if x['type'] == ty and x['ms'] == ms:
+      # exact match ends the search
+      return [k]
+
+  for k,x in scope.asserts.items():
+    if x['type'] == ty:
+      binds = can_produce(scope, x['ms'], ms, d)
+      if binds is not None:
+        # get the order right
+        var = variables_in_scope(scope, x['ms'])
+        good = True
+        rret = []
+        for kk in var:
+          if kk not in binds:
+            good = False
+            break
+          rret += binds[kk][2]
+        if good:
+          return rret+[k]
+
+  return None
+
+def tokenize(ind, type_):
+  return [lark.lexer.Token(value=x, type_=type_) for x in ind.split(" ")]
+
+#ms = tokenize("wff not = 0 S x", "MATH_SYMBOL")
+#ms = tokenize("wff not = 0 S t", "MATH_SYMBOL")
+ms = tokenize("wff = 0 0", "MATH_SYMBOL")
+#ms = tokenize("|- = 0 0", "MATH_SYMBOL")
+#ms = tokenize("term x", "MATH_SYMBOL")
+#ms = tokenize("var x", "MATH_SYMBOL")
+ret = search(scope, ms[0], ms[1:])
+print(lp(ret))
+t = exec_metamath(scope, ret).pop()
+print(t[0], lp(t[1]))
+
 if args.repl:
   print("entering repl")
   # labels
@@ -366,7 +445,7 @@ if args.repl:
       continue
     cmd, ind = ind.split(" ", 1)
     if cmd == "c" or cmd == "command":
-      lbls = [lark.lexer.Token(value=x, type_="LABEL") for x in ind.split(" ")]
+      lbls = tokenize(ind, "LABEL")
       try:
         stack = exec_metamath(scope, lbls)
         while len(stack) != 0:
@@ -376,9 +455,13 @@ if args.repl:
         traceback.print_exc()
     elif cmd == "s" or cmd == "search":
       # search for a set of labels that produces this string of math symbols
-      ms = [lark.lexer.Token(value=x, type_="MATH_SYMBOL") for x in ind.split(" ")]
+      ms = tokenize(ind, "MATH_SYMBOL")
       try:
-        search(scope, ms[0], ms[1:])
+        ret = search(scope, ms[0], ms[1:])
+        if ret is not None:
+          print(lp(ret))
+        else:
+          print("search failed")
       except KeyboardInterrupt:
         print("interrupted")
         pass
