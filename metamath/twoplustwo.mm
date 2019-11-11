@@ -4,6 +4,10 @@ wff_pa_ax1 $p wff not = 0 S x $=
   tzero varx tvar tsucc binpred_equals wff_atom wff_not
 $.
 
+wff_pa_ax1_term $p wff not = 0 S t $=
+  tzero tt tsucc binpred_equals wff_atom wff_not
+$.
+
 int1 $p |- implies chi not = 0 S x $=
   varx wff_pa_ax1 logbinopimplies varx wff_pa_ax1 wff-chi wff_logbinop varx pa_ax1 varx wff_pa_ax1 wff-chi ax-1 ax-mp
 $.
@@ -46,7 +50,7 @@ ax-mp
 $)
 
 $( forall x, x=0 -> 0 != S x $)
-cheat2 $p |- forall x implies = x 0 not = 0 S x $=
+nocheat2 $p |- forall x implies = x 0 not = 0 S x $=
 varx quant_all varx wff_pa_ax1 wff_quant
 varx quant_all logbinopimplies varx wff_pa_ax1 varx tvar tzero binpred_equals wff_atom wff_logbinop wff_quant
 varx nocheat
@@ -54,112 +58,88 @@ tzero varx varx wff_pa_ax1 all_elim
 ax-mp
 $.
 
-$( two_plus_two_eq_four $a |- = + S S 0 S S 0 S S S S 0 $. $)
-
-$(
-varx vary pa_ax4
-
-varx tvar
-
-if forall x, f(x) and x=t then f(t)
-
-$)
-
-
-$( all_elim: forall x, phi -> forall x, (x = t) -> phi $)
-
-$(
-
-(forall x, phi) t- > (forall x, x=t -> phi)
-
-tzero varx varx wff_pa_ax1 all_elim
-
-|- not = 0 S x
-|- forall x, not = 0 S x
-
-phi = varx pa_ax1_wff
-psi = wff_psi
-ax-1
-
-varx wff_pa_ax1 logbinopimplies varx wff_pa_ax1 wff_psi wff_logbinop varx wff_pa_ax1 logbinopimplies tbinop varx pa_ax1 varx wff_pa_ax1 wff_psi ax-1 ax-mp
-
-phi = wff_psi
-
-varx wff_psi varx wff_pa_ax1 varx wff_psi int1 alpha_2
-
-phi = not = 0 S x
-psi = implies chi not = 0 S x
-min = varx pa_ax1
-maj = varx wff_pa_ax1 wff-chi ax-1
-
-varx wff_pa_ax1
-logbinopimplies varx wff_pa_ax1 wff-chi wff_logbinop
-varx pa_ax1
-varx wff_pa_ax1 wff-chi ax-1
-ax-mp
-
-varx wff_pa_ax1 logbinopimplies varx wff_pa_ax1 wff-chi wff_logbinop varx pa_ax1 varx wff_pa_ax1 wff-chi ax-1 ax-mp
-
-
-
-varx wff_pa_ax1 wff-chi ax-1
-
-
-
-implies phi chi
-
-varx pa_ax1
-
-alpha_hyp2
-
-
-phi = phi
-x = varx
-chi = not = 0 S x
-
-alpha_2
-
-wff_phi tzero varx tvar tsucc binpred_equals wff_atom wff_not varx alpha_2
-
-
-phi = |- not = 0 S x
-psi = |- not = 0 S 0
-
-
-|- not = 0 S x -> |- not = 0 S 0
-
-test $p |- not = 0 S y $=
+nocheat2_wff $p wff forall x implies = x 0 not = 0 S x $=
+  varx quant_all logbinopimplies varx tvar wff_pa_ax1_term varx tvar tzero binpred_equals wff_atom wff_logbinop wff_quant
 $.
 
+$( (forall x, forall y, x=y -> phi<->psi) -> forall x, phi <-> forall y, psi $)
+
+tmp3 $p |- implies and = t t = x 0 iff = t x = t 0 $=
+tt tt varx tvar tzero binpred_equals eq-congr
+$.
+
+tmp3a $p |- implies = x 0 = S x S 0 $=
+  varx tvar tzero eq-suc
+$.
+
+$( x = 0 -> (0 != S x <-> 0 != S 0) $)
+$(
+  s0 = S x
+  s1 = S 0
+  t0 = 0
+  t1 = 0
+  binpred_equals
+  eq-congr -> iff = 0 S x = 0 S 0
 $)
 
-$(
+tmp3b $p |- implies and = 0 0 = S x S 0 iff = 0 S x = 0 S 0 $=
+  tzero
+  tzero
+  varx tvar tsucc
+  tzero tsucc
+  binpred_equals
+  eq-congr
+$.
 
-x: x
-t: 0
-phi: not = 0 S x
-chi: not = 0 S 0
+tmp3c $a |- implies = S x S 0 and = 0 0 = S x S 0 $.
+
+$(
+  phi: = S x S 0
+  psi: and = 0 0 = S x S 0
+  chi: iff = 0 S x = 0 S 0
+$)
+
+tmp3d $a |- implies = S x S 0 iff = 0 S x = 0 S 0 $.
+
+$(
+  phi: = x 0
+  psi: = S x S 0
+  chi: iff = 0 S x = 0 S 0
+$)
+
+tmp3e $a |- implies = x 0 iff = 0 S x = 0 S 0 $.
+
+$( using ax-3 $)
+
+tmp3f $a |- implies iff 0 S x = 0 S 0 iff not = 0 S x not = 0 S 0 $.
+
+$(
+  phi: = x 0
+  psi: iff = 0 S x = 0 S 0
+  chi: iff not = 0 S x not = 0 S 0
+  phi -> psi = tmp3e
+  psi -> chi = tmp3f
+$)
+
+cheat3 $a |- implies = x 0 iff not = 0 S x not = 0 S 0 $.
+
+$( t,x,phi,chi,all_elim3_hyp1 $)
+nocheat4 $p |- implies
+    forall x implies = x 0 not = 0 S x
+  not = 0 S 0 $=
+tzero
+varx
+varx tvar wff_pa_ax1_term
+tzero wff_pa_ax1_term
+varx cheat3
 all_elim3
-
-forall x, x=t -> x!=(S x) 0!=(S x)
-
-
-tzero varx tzero varx tvar tsucc binpred_equals wff_atom wff_not all_elim
-
-
-|- implies
-   forall x, 0 != S x -> forall x, x=0 -> 0 != S x
-
-
-tzero varx tvar tsucc binpred_equals wff_atom wff_not
-tzero tzero tsucc binpred_equals wff_atom wff_not
-
-tzero tzero tsucc binpred_equals wff_atom wff_not
-tzero pa_ax1 $.
-
-tzero tsucc tsucc tzero tsucc tsucc binop_plus tbinop
-tzero tsucc tsucc tsucc tsucc
-binpred_equals wff_atom
 $.
-$)
+
+one_ne_zero $p |- not = 0 S 0 $=
+varx nocheat2_wff
+tzero wff_pa_ax1_term
+varx nocheat2
+varx nocheat4
+ax-mp
+$.
 
