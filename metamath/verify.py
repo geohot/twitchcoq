@@ -348,11 +348,10 @@ def search_forward(scope, ty, ms):
           #traceback.print_exc()
           pass
 
-def can_produce(scope, tms, ms, d):
+def can_produce(scope, tms, ms, d, binds):
   var = variables_in_scope(scope, tms)
   #print("CAN", lp(tms), "PRODUCE", lp(ms), "REPLACING", lp(var))
   p0, p1 = 0, 0
-  binds = {}
   while p0 < len(tms) and p1 < len(ms):
     if tms[p0] not in var:
       if tms[p0] == ms[p1]:
@@ -398,22 +397,21 @@ def search(scope, ty, ms, d=0):
 
   for k,x in scope.asserts.items():
     if x['type'] == ty:
-      binds = can_produce(x['scope'], x['ms'], ms, d)
+      binds = can_produce(x['scope'], x['ms'], ms, d, {})
       if binds is not None:
-        # get the order right
         var = variables_in_scope(x['scope'], x['ms'])
         good = True
+        # check for essential hypothesis in scope
+        for kk in x['scope'].essen:
+          #print("  "*d+"check essential", kk['lbl'], kk['type'], kk['ms'])
+          good = False
+        # get the order right
         rret = []
         for kk in var:
           if kk not in binds:
             good = False
             break
           rret += binds[kk][2]
-        # check for essential hypothesis in scope
-        for lbl,kk in x['scope'].hypos.items():
-          if kk['floating'] == False:
-            print("  "*d+"check essential", kk['type'], kk['ms'])
-            good = False
         if good:
           return rret+[k]
 
@@ -432,7 +430,18 @@ if args.test:
     "var x",
     "|- = x x",
     "|- not = 0 S x",
-    "|- implies chi not = 0 S x"
+    "|- implies chi not = 0 S x",  # fails due to essential hypothesis
+    "wff forall x implies = x 0 not = 0 S x",
+    "wff iff = 0 S x = 0 S 0",
+    "|- = S 0 S 0",
+    "|- implies = x y = S x S y",
+    "|- implies = S x S y = S S x S S y",
+    "|- implies = x y = S S x S S y", # fails, combine?
+    "|- not = 0 S 0",  # fails, superhard
+    "wff not = 0 S 0",
+    "|- = + S S 0 S S 0 S S S S 0",   # 2+2=4 :)
+    "wff = + S S 0 S S 0 S S S S 0",
+    "wff = + S S 0 S S 0 S S S 0",
   ]
   for tst in tests:
     ms = tokenize(tst, "MATH_SYMBOL")

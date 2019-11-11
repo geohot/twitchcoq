@@ -8,8 +8,18 @@ wff_pa_ax1_term $p wff not = 0 S t $=
   tzero tt tsucc binpred_equals wff_atom wff_not
 $.
 
+$(
+  phi $b varx wff_pa_ax1
+  psi $b logbinopimplies varx wff_pa_ax1 wff-chi wff_logbinop
+  ax-mp
+$)
+
 int1 $p |- implies chi not = 0 S x $=
-  varx wff_pa_ax1 logbinopimplies varx wff_pa_ax1 wff-chi wff_logbinop varx pa_ax1 varx wff_pa_ax1 wff-chi ax-1 ax-mp
+  varx wff_pa_ax1
+  logbinopimplies varx wff_pa_ax1 wff-chi wff_logbinop
+    varx pa_ax1
+    varx wff_pa_ax1 wff-chi ax-1
+  ax-mp
 $.
 
 ${
