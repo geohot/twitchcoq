@@ -7,6 +7,7 @@ import lark
 import logging
 import argparse
 import traceback
+import itertools
 from tqdm import tqdm
 
 parser = argparse.ArgumentParser(description='Verify metamath')
@@ -19,10 +20,12 @@ args = parser.parse_args()
 logging.basicConfig(level=logging.WARNING, format='%(message)s')
 
 log = logging.getLogger(__name__)
+loglevel = logging.WARNING
 if args.debug:
-  log.setLevel(logging.DEBUG)
+  loglevel = logging.DEBUG
 elif args.verbose:
-  log.setLevel(logging.INFO)
+  loglevel = logging.INFO
+log.setLevel(loglevel)
 
 grammar = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "mm.g")).read()
 l = lark.Lark(grammar, parser="lalr")
@@ -225,9 +228,7 @@ def exec_metamath(scope, lbls):
     refs.append(stack.peek())
 
   # confirm stack is this
-  ret = stack.pop()
-  assert(len(stack) == 0)
-  return ret
+  return stack
 
 def parse_stmt(scope, xx):
   if xx.data == "variable_stmt":
@@ -312,14 +313,61 @@ for k,v in pbar:
     else:
       lbls = xx.children
     log.info(lp(lbls))
-    o = exec_metamath(v['scope'], lbls)
+    stack = exec_metamath(v['scope'], lbls)
+    o = stack.pop()
+    assert len(stack) == 0
     log.info("  produced %s %s expected %s %s" % (o[0], lp(o[1]), v['type'], lp(v['ms'])))
     assert o == (v['type'], v['ms'])
 log.info("*********** VERIFIED ***********")
 
+def search(scope, ty, ms):
+  print("asserts: %d hypos: %d" % (len(scope.asserts), len(scope.hypos)))
+  all_lbls = [lark.lexer.Token(value=x, type_="LABEL") for x in list(scope.asserts.keys())+list(scope.hypos.keys())]
+  ok = [[],]
+  d = 0
+  while 1:
+    d += 1
+    print("searching at depth %d with %d" % (d, len(ok)))
+    for prefix in ok[:]:
+      for l in all_lbls:
+        try:
+          log.setLevel(logging.ERROR)
+          x = prefix+[l]
+          stack = exec_metamath(scope, x)
+          log.setLevel(loglevel)
+          o = stack.pop()
+          if o[0] == ty and o[1] == ms:
+            print("HIT", lp(x))
+            return
+          ok.append(x)
+        except Exception:
+          #traceback.print_exc()
+          pass
+
+  for r in range(1,3):
+    found = False
+    for x in itertools.product(all_lbls, repeat=r):
+      #print("running", lp(x))
+      try:
+        log.setLevel(logging.ERROR)
+        stack = exec_metamath(scope, x)
+        log.setLevel(loglevel)
+        o = stack.pop()
+        if o[0] == ty and o[1] == ms:
+          found = True
+          print("HIT", lp(x))
+          break
+      except Exception:
+        pass
+    if found:
+      break
+
 if args.repl:
   print("entering repl")
+  # labels
   print("asserts:", lp(scope.asserts))
+  print("hypos:", lp(scope.hypos))
+  # math symbols
   print("constants:", lp(scope.constants))
   print("variables:", lp(scope.variables))
   try:
@@ -331,12 +379,22 @@ if args.repl:
     readline.parse_and_bind("tab: complete")
 
   while True:
-    ind = input('lbls> ').strip()
-    if len(ind) > 0:
+    ind = input('cmd> ').strip()
+    if len(ind) == 0 or " " not in ind:
+      continue
+    cmd, ind = ind.split(" ", 1)
+    if cmd == "c" or cmd == "command":
       lbls = [lark.lexer.Token(value=x, type_="LABEL") for x in ind.split(" ")]
       try:
-        o = exec_metamath(scope, lbls)
-        print(o[0], lp(o[1]))
+        stack = exec_metamath(scope, lbls)
+        while len(stack) != 0:
+          o = stack.pop()
+          print(o[0], lp(o[1]))
       except Exception:
         traceback.print_exc()
+    elif cmd == "s" or cmd == "search":
+      # search for a set of labels that produces this string of math symbols
+      ms = [lark.lexer.Token(value=x, type_="MATH_SYMBOL") for x in ind.split(" ")]
+      search(scope, ms[0], ms[1:])
+
 
