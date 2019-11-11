@@ -442,6 +442,9 @@ if args.test:
     "|- = + S S 0 S S 0 S S S S 0",   # 2+2=4 :)
     "wff = + S S 0 S S 0 S S S S 0",
     "wff = + S S 0 S S 0 S S S 0",
+    "|- implies = x y = y x",
+    "|- implies and = x y = y z = x z",
+    "|- implies and = x y = z y = x z",  # this fails
   ]
   for tst in tests:
     ms = tokenize(tst, "MATH_SYMBOL")
@@ -453,20 +456,6 @@ if args.test:
       t = stk.pop()
       passed = len(stk) == 0 and ms[0] == t[0] and ms[1:] == t[1]
     print(colored("passed", "green") if passed else colored("failed", "red"), tst, colored("<-", "yellow"), lp(prog))
-
-  """
-  #ms = tokenize("wff not = 0 S x", "MATH_SYMBOL")
-  #ms = tokenize("wff not = 0 S t", "MATH_SYMBOL")
-  ms = tokenize("|- implies chi not = 0 S x", "MATH_SYMBOL")
-  #ms = tokenize("wff = 0 0", "MATH_SYMBOL")
-  #ms = tokenize("|- = 0 0", "MATH_SYMBOL")
-  #ms = tokenize("term x", "MATH_SYMBOL")
-  #ms = tokenize("var x", "MATH_SYMBOL")
-  ret = search(scope, ms[0], ms[1:])
-  print(lp(ret))
-  t = exec_metamath(scope, ret).pop()
-  print(t[0], lp(t[1]))
-  """
 
 if args.repl:
   print("entering repl")
