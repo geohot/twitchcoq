@@ -11,6 +11,7 @@ import itertools
 from tqdm import tqdm
 
 parser = argparse.ArgumentParser(description='Verify metamath')
+parser.add_argument('-t', '--test', action='store_true')
 parser.add_argument('-r', '--repl', action='store_true')
 parser.add_argument('-v', '--verbose', action='store_true')
 parser.add_argument('-d', '--debug', action='store_true')
@@ -337,8 +338,8 @@ def search_forward(scope, ty, ms):
           log.setLevel(loglevel)
           o = stack.pop()
           if o[0] == ty and o[1] == ms:
-            print("HIT", lp(x))
-            return
+            #print("HIT", lp(x))
+            return x
           ok.append(x)
         except Exception:
           #traceback.print_exc()
@@ -412,18 +413,17 @@ def search(scope, ty, ms, d=0):
 def tokenize(ind, type_):
   return [lark.lexer.Token(value=x, type_=type_) for x in ind.split(" ")]
 
-"""
-#ms = tokenize("wff not = 0 S x", "MATH_SYMBOL")
-#ms = tokenize("wff not = 0 S t", "MATH_SYMBOL")
-ms = tokenize("wff = 0 0", "MATH_SYMBOL")
-#ms = tokenize("|- = 0 0", "MATH_SYMBOL")
-#ms = tokenize("term x", "MATH_SYMBOL")
-#ms = tokenize("var x", "MATH_SYMBOL")
-ret = search(scope, ms[0], ms[1:])
-print(lp(ret))
-t = exec_metamath(scope, ret).pop()
-print(t[0], lp(t[1]))
-"""
+if args.test:
+  ms = tokenize("wff not = 0 S x", "MATH_SYMBOL")
+  #ms = tokenize("wff not = 0 S t", "MATH_SYMBOL")
+  #ms = tokenize("wff = 0 0", "MATH_SYMBOL")
+  #ms = tokenize("|- = 0 0", "MATH_SYMBOL")
+  #ms = tokenize("term x", "MATH_SYMBOL")
+  #ms = tokenize("var x", "MATH_SYMBOL")
+  ret = search(scope, ms[0], ms[1:])
+  print(lp(ret))
+  t = exec_metamath(scope, ret).pop()
+  print(t[0], lp(t[1]))
 
 if args.repl:
   print("entering repl")
@@ -455,6 +455,13 @@ if args.repl:
           print(o[0], lp(o[1]))
       except Exception:
         traceback.print_exc()
+    elif cmd == "f" or cmd == "forward":
+      ms = tokenize(ind, "MATH_SYMBOL")
+      try:
+        ret = search_forward(scope, ms[0], ms[1:])
+        print(lp(ret))
+      except KeyboardInterrupt:
+        print("interrupted")
     elif cmd == "s" or cmd == "search":
       # search for a set of labels that produces this string of math symbols
       ms = tokenize(ind, "MATH_SYMBOL")
@@ -466,6 +473,5 @@ if args.repl:
           print("search failed")
       except KeyboardInterrupt:
         print("interrupted")
-        pass
 
 
