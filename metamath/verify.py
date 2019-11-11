@@ -8,6 +8,7 @@ import logging
 import argparse
 import traceback
 import itertools
+from termcolor import colored
 from tqdm import tqdm
 
 parser = argparse.ArgumentParser(description='Verify metamath')
@@ -61,6 +62,8 @@ class Scope(object):
     return ret
 
 def lp(ms):
+  if ms is None:
+    return "NONE"
   return ' '.join(map(str, ms))
 
 class Stack(object):
@@ -338,8 +341,8 @@ def search_forward(scope, ty, ms):
           log.setLevel(loglevel)
           o = stack.pop()
           if o[0] == ty and o[1] == ms:
-            #print("HIT", lp(x))
-            return x
+            if len(stack) == 0:
+              return x
           ok.append(x)
         except Exception:
           #traceback.print_exc()
@@ -385,19 +388,20 @@ def can_produce(scope, tms, ms, d):
 def search(scope, ty, ms, d=0):
   if d == 10:
     return None
-  print("  "*d+"searching for", ty, lp(ms))
+  log.debug("  "*d+"searching for %s %s" % (ty, lp(ms)))
   for k,x in scope.hypos.items():
-    # hypothesis must be exact
-    if x['type'] == ty and x['ms'] == ms:
-      # exact match ends the search
-      return [k]
+    if x['floating']:
+      # hypothesis must be exact
+      if x['type'] == ty and x['ms'] == ms:
+        # exact match ends the search
+        return [k]
 
   for k,x in scope.asserts.items():
     if x['type'] == ty:
-      binds = can_produce(scope, x['ms'], ms, d)
+      binds = can_produce(x['scope'], x['ms'], ms, d)
       if binds is not None:
         # get the order right
-        var = variables_in_scope(scope, x['ms'])
+        var = variables_in_scope(x['scope'], x['ms'])
         good = True
         rret = []
         for kk in var:
@@ -405,6 +409,11 @@ def search(scope, ty, ms, d=0):
             good = False
             break
           rret += binds[kk][2]
+        # check for essential hypothesis in scope
+        for lbl,kk in x['scope'].hypos.items():
+          if kk['floating'] == False:
+            print("  "*d+"check essential", kk['type'], kk['ms'])
+            good = False
         if good:
           return rret+[k]
 
@@ -414,8 +423,32 @@ def tokenize(ind, type_):
   return [lark.lexer.Token(value=x, type_=type_) for x in ind.split(" ")]
 
 if args.test:
-  ms = tokenize("wff not = 0 S x", "MATH_SYMBOL")
+  tests = [
+    "wff not = 0 S x",
+    "wff not = 0 S t",
+    "wff = 0 0",
+    "|- = 0 0",
+    "term x",
+    "var x",
+    "|- = x x",
+    "|- not = 0 S x",
+    "|- implies chi not = 0 S x"
+  ]
+  for tst in tests:
+    ms = tokenize(tst, "MATH_SYMBOL")
+    prog = search(scope, ms[0], ms[1:])
+    if prog is None:
+      passed = False
+    else:
+      stk = exec_metamath(scope, prog)
+      t = stk.pop()
+      passed = len(stk) == 0 and ms[0] == t[0] and ms[1:] == t[1]
+    print(colored("passed", "green") if passed else colored("failed", "red"), tst, colored("<-", "yellow"), lp(prog))
+
+  """
+  #ms = tokenize("wff not = 0 S x", "MATH_SYMBOL")
   #ms = tokenize("wff not = 0 S t", "MATH_SYMBOL")
+  ms = tokenize("|- implies chi not = 0 S x", "MATH_SYMBOL")
   #ms = tokenize("wff = 0 0", "MATH_SYMBOL")
   #ms = tokenize("|- = 0 0", "MATH_SYMBOL")
   #ms = tokenize("term x", "MATH_SYMBOL")
@@ -424,6 +457,7 @@ if args.test:
   print(lp(ret))
   t = exec_metamath(scope, ret).pop()
   print(t[0], lp(t[1]))
+  """
 
 if args.repl:
   print("entering repl")
