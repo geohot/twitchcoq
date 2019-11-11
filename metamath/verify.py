@@ -344,24 +344,6 @@ def search(scope, ty, ms):
           #traceback.print_exc()
           pass
 
-  for r in range(1,3):
-    found = False
-    for x in itertools.product(all_lbls, repeat=r):
-      #print("running", lp(x))
-      try:
-        log.setLevel(logging.ERROR)
-        stack = exec_metamath(scope, x)
-        log.setLevel(loglevel)
-        o = stack.pop()
-        if o[0] == ty and o[1] == ms:
-          found = True
-          print("HIT", lp(x))
-          break
-      except Exception:
-        pass
-    if found:
-      break
-
 if args.repl:
   print("entering repl")
   # labels
@@ -395,6 +377,10 @@ if args.repl:
     elif cmd == "s" or cmd == "search":
       # search for a set of labels that produces this string of math symbols
       ms = [lark.lexer.Token(value=x, type_="MATH_SYMBOL") for x in ind.split(" ")]
-      search(scope, ms[0], ms[1:])
+      try:
+        search(scope, ms[0], ms[1:])
+      except KeyboardInterrupt:
+        print("interrupted")
+        pass
 
 
