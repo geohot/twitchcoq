@@ -17,7 +17,8 @@ def get_file : io char_buffer :=
 
 def main : io unit :=
 do a <- get_file,
-   let b := a.to_string.split whitespace,
-   put_str (string.join b)
+   let l := a.to_string.split whitespace,
+   let l2 := l.filter (λ r, r ≠ ""),
+   put_str (l2.foldl (λ r s, r ++ " " ++ s) "")
 
 #eval main
