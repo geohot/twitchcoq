@@ -148,6 +148,30 @@ def decompress_proof(scope, inms, children):
     #print(len(ret), n, ret[-1])
   return ret
 
+def bind(scope, ms, bindings, partial=False):
+  nms = []
+  for v in ms:
+    if v in scope.variables:
+      # late binding no longer supported
+      if not partial:
+        assert v in bindings
+        nms.append(bindings[v])
+      else:
+        if v in bindings:
+          nms.append(bindings[v])
+        else:
+          nms.append([v])
+    else:
+      # pass through constants
+      if v not in scope.constants:
+        log.warning("WTF", v, "ISN'T A CONSTANT", lp(ms))
+      assert v in scope.constants
+      nms.append([v])
+  ret = []
+  for x in nms:
+    ret += x
+  return ret
+
 def exec_metamath(scope, lbls):
   refs = []
   stack = Stack()
@@ -163,24 +187,6 @@ def exec_metamath(scope, lbls):
         assert scope.vtypes[v] == vt
         log.debug("  bind %s to %s" % (v, lp(vnms)))
         bindings[v] = vnms
-
-    def bind(scope, ms):
-      nms = []
-      for v in ms:
-        if v in scope.variables:
-          # late binding no longer supported
-          assert v in bindings
-          nms.append(bindings[v])
-        else:
-          # pass through constants
-          if v not in scope.constants:
-            log.warning("WTF", v, "ISN'T A CONSTANT", lp(ms))
-          assert v in scope.constants
-          nms.append([v])
-      ret = []
-      for x in nms:
-        ret += x
-      return ret
 
     if s in scope.asserts:
       a = scope.asserts[s]
@@ -214,11 +220,11 @@ def exec_metamath(scope, lbls):
       # parse essential
       for et, enms, ems, lbl in pop:
         log.debug("working on %s" % lbl)
-        nms = bind(a['scope'], ems)
+        nms = bind(a['scope'], ems, bindings)
         log.debug("compare %s to %s" % (lp(nms), lp(enms)))
         assert nms == enms
 
-      stack.push(a['type'], bind(a['scope'], ms))
+      stack.push(a['type'], bind(a['scope'], ms, bindings))
     elif s in scope.hypos:
       a = scope.hypos[s]
       # don't bind variables
@@ -403,7 +409,9 @@ def search(scope, ty, ms, d=0):
         good = True
         # check for essential hypothesis in scope
         for kk in x['scope'].essen:
-          #print("  "*d+"check essential", kk['lbl'], kk['type'], kk['ms'])
+          bb = bind(x['scope'], kk['ms'], {k : v[1] for k, v in binds.items()}, partial=True)
+          print("  "*d+"check essential", kk['lbl'], kk['type'], lp(bb))
+          #ss = search(x['scope'], kk['type'], bb, d+1)
           good = False
         # get the order right
         rret = []
@@ -456,6 +464,9 @@ if args.test:
       t = stk.pop()
       passed = len(stk) == 0 and ms[0] == t[0] and ms[1:] == t[1]
     print(colored("passed", "green") if passed else colored("failed", "red"), tst, colored("<-", "yellow"), lp(prog))
+    if not passed:
+      print("stopping early")
+      break
 
 if args.repl:
   print("entering repl")
