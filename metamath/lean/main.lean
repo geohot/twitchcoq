@@ -10,8 +10,6 @@ inductive stmt : Type
 | axiom_stmt : string -> string -> (list string) -> stmt
 | provable_stmt : string -> string -> (list string) -> (list string) -> stmt
 | scope_stmt : (list stmt) -> stmt
-| scope_open : stmt
-| scope_close : stmt
 | parse_error : (list string) -> stmt
 
 def stmt_to_string : stmt -> string
@@ -22,9 +20,8 @@ def stmt_to_string : stmt -> string
 | (stmt.essential_stmt name typecode ms) := "essential_stmt: " ++ name ++ " " ++ typecode ++ " " ++ (list.to_string ms)
 | (stmt.axiom_stmt name typecode ms) := "axiom_stmt: " ++ name ++ " " ++ typecode ++ " " ++ (list.to_string ms)
 | (stmt.provable_stmt name typecode ms proof) := "provable_stmt: " ++ name ++ " " ++ typecode ++ " " ++ (list.to_string ms) ++ " " ++ (list.to_string proof)
-| (stmt.scope_open) := "scope_open"
-| (stmt.scope_close) := "scope_close"
-| (stmt.scope_stmt lst) := "scope_stmt: TODO"
+| (stmt.scope_stmt (a::lst)) := (stmt_to_string a) ++ "\n" ++ (stmt_to_string (stmt.scope_stmt lst))
+| (stmt.scope_stmt []) := "}"
 | (stmt.parse_error lst) := "PARSE ERROR: " ++ (lst.take 10).to_string
 
 instance : has_to_string stmt := ⟨stmt_to_string⟩
@@ -47,11 +44,9 @@ def parser_core : nat -> list string -> list stmt
     | (name :: "$p" :: typecode :: l) := let (x, rest) := consume_until "$=" l in
         let (y, rest2) := consume_until "$." rest in
             (stmt.provable_stmt name typecode x y) :: (pc rest2) 
-    -- TODO: fix scope statements to be properly nested
-    --| ("${" :: l) := let (x, rest) := consume_until "$}" l in
-    --    (stmt.scope_stmt ((parser_core n) x)) :: (pc rest) 
-    | ("${" :: l) := (stmt.scope_open) :: (pc l)
-    | ("$}" :: l) := (stmt.scope_close) :: (pc l)
+    | ("${" :: l) := let (x, rest) := consume_until "$}" l in
+        (stmt.scope_stmt ((parser_core n) x)) :: (pc rest) 
+    -- comments go nowhere
     | ("$(" :: l) := let (x, rest) := consume_until "$)" l in (pc rest) 
     | [] := []
     | l := [(stmt.parse_error l)]
@@ -71,14 +66,12 @@ def lexer (s : string) : list string :=
 open io
 
 def get_file : io char_buffer :=
-    fs.read_file "/Users/smooth/build/twitchcoq/metamath/lib/peano.mm"
+    fs.read_file "/Users/smooth/build/twitchcoq/metamath/miu2.mm"
 
 def main : io unit :=
 do a <- get_file,
    let s := a.to_string,
    let l := lexer s,
-   let p := parser l,
-   put_str ((p.foldl (λ r s, r ++ "\n" ++ (stmt_to_string s)) "PARSE LIST") ++ "\n")
-   --put_str ((list.to_string l) ++ "\n" ++ (list.to_string p) ++ "\n")
-
+   let p := stmt.scope_stmt (parser l),
+   put_str ((stmt_to_string p) ++ "\n")
 #eval main
