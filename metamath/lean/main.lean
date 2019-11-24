@@ -3,42 +3,36 @@ import init.data.string.ops
 
 inductive stmt : Type
 | constant_stmt : list string -> stmt
+| variable_stmt : list string -> stmt
+| floating_stmt : string -> string -> string -> stmt
+| essential_stmt : string -> string -> (list string) -> stmt
+| axiom_stmt : string -> string -> (list string) -> stmt
+| provable_stmt : string -> string -> (list string) -> (list string) -> stmt
+| parse_error
 
 def stmt_to_string : stmt -> string
 | (stmt.constant_stmt l) := "constant_stmt: " ++ (list.to_string l)
+| (stmt.variable_stmt l) := "variable_stmt: " ++ (list.to_string l)
+| (stmt.floating_stmt name typecode var) := "floating_stmt: " ++ name ++ " " ++ typecode ++ " " ++ var
+| (stmt.essential_stmt name typecode ms) := "essential_stmt: " ++ name ++ " " ++ typecode ++ " " ++ (list.to_string ms)
+| (stmt.axiom_stmt name typecode ms) := "axiom_stmt: " ++ name ++ " " ++ typecode ++ " " ++ (list.to_string ms)
+| (stmt.provable_stmt name typecode ms proof) := "provable_stmt: " ++ name ++ " " ++ typecode ++ " " ++ (list.to_string ms) ++ " " ++ (list.to_string proof)
+| stmt.parse_error := "PARSE ERROR"
 
 instance : has_to_string stmt := ⟨stmt_to_string⟩
 
-/-
-structure constant_stmt extends stmt :=
-mk :: (consts : list string)
+def good (s : string) : string -> bool
+| "$." := true
+| default := false
 
-
-structure variable_stmt extends stmt :=
-mk :: (vars : list string)
-
-structure named_stmt extends stmt :=
-mk :: (name : string)
-
-structure floating_stmt extends named_stmt :=
-mk :: (typecode : string) (var : string) 
-
-structure axiom_stmt extends named_stmt :=
-mk :: (typecode : string) (ss : list string)
-
-structure provable_stmt extends named_stmt :=
-mk :: (typecode : string) (ss : list string) (proof : list string)
-
-def parser : list string -> stmt
-| [] := []
-| ["$c"::l] := (stmt.constant_stmt l)
--/
+def consume_until (s : string) : list string -> (list string) × (list string)
+| [] := ([], [])
+| (a :: l) := if a ≠ s then let (aa, bb) := consume_until l in (a :: aa, bb) else ([], l)
 
 def parser : list string -> list stmt
-| [] := []
-| [a] := []
-| ("$c" :: l) := [stmt.constant_stmt l]
-| (a :: b) := []
+| ("$c" :: l) := let (consts, rest) := consume_until "$." l in [stmt.constant_stmt consts]
+| ("$v" :: l) := [stmt.variable_stmt l]
+| default := [stmt.parse_error]
 
 def whitespace : char -> bool
 | ' ' := true
