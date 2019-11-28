@@ -68,10 +68,20 @@ def lexer := filter (≠ "") ∘ split whitespace
 -- IO crap below this line
 open io
 
-def main : io unit :=
-do s <- fs.read_file "/Users/jrn/code/twitchcoq/metamath/twoplustwo.mm",
-   let l := lexer s.to_string,
-   let p := stmt.scope_stmt $ parser l,
-   print_ln p -- uses to_string instance
+def parse_from (directory : string) (file : string) : io stmt :=
+do s ← fs.read_file (directory ++ file),
+   let p := parser $ lexer s.to_string,
+   match p with
+   | stmt.include_stmt db_file :: rest :=
+     do db ← fs.read_file (directory ++ db_file),
+        -- lean harassed about recursion, so this only supports one import.
+        return $ stmt.scope_stmt $ parser (lexer db.to_string) ++ rest
+   | _ := return $ stmt.scope_stmt p
+   end
 
-#eval main
+def main : io unit :=
+do let dir := "../",
+   let file := "twoplustwo.mm",
+   parse_from dir file >>= print_ln -- uses to_string instance
+
+#eval parse_from "/Users/smooth/build/twitchcoq/metamath/miu2.mm/" "miu2.mm" >>= print_ln
