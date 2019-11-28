@@ -80,8 +80,8 @@ do s ← fs.read_file (directory ++ file),
    end
 
 def main : io unit :=
-do let dir := "../",
+do let dir := "../", -- doesn't work with eval, but "lean -- run main.lean" is fine
    let file := "twoplustwo.mm",
    parse_from dir file >>= print_ln -- uses to_string instance
 
-#eval parse_from "/Users/smooth/build/twitchcoq/metamath/miu2.mm/" "miu2.mm" >>= print_ln
+#eval parse_from "/Users/smooth/build/twitchcoq/metamath/" "miu2.mm" >>= print_ln
