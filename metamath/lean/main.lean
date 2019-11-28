@@ -1,5 +1,7 @@
 import system.io
-import init.data.string.ops
+
+open list
+open string
 
 inductive stmt : Type
 | constant_stmt : list string -> stmt
@@ -10,6 +12,7 @@ inductive stmt : Type
 | axiom_stmt : string -> string -> (list string) -> stmt
 | provable_stmt : string -> string -> (list string) -> (list string) -> stmt
 | scope_stmt : (list stmt) -> stmt
+| include_stmt : string -> stmt
 | parse_error : (list string) -> stmt
 
 def stmt_to_string : stmt -> string
@@ -22,13 +25,13 @@ def stmt_to_string : stmt -> string
 | (stmt.provable_stmt name typecode ms proof) := "provable_stmt: " ++ name ++ " " ++ typecode ++ " " ++ (list.to_string ms) ++ " " ++ (list.to_string proof)
 | (stmt.scope_stmt (a::lst)) := (stmt_to_string a) ++ "\n" ++ (stmt_to_string (stmt.scope_stmt lst))
 | (stmt.scope_stmt []) := "}"
+| (stmt.include_stmt l) := "include_stmt: " ++ l
 | (stmt.parse_error lst) := "PARSE ERROR: " ++ (lst.take 10).to_string
 
 instance : has_to_string stmt := ⟨stmt_to_string⟩
 
-def consume_until (s : string) : list string -> (list string) × (list string)
-| [] := ([], [])
-| (a :: l) := if a ≠ s then let (aa, bb) := consume_until l in (a :: aa, bb) else ([], l)
+def consume_until (s : string) : list string → (list string) × (list string) :=
+prod.map id tail ∘ span (≠ s)
 
 def parser_core : nat -> list string -> list stmt
 | 0 := λ x, [(stmt.parse_error x)]
@@ -47,31 +50,28 @@ def parser_core : nat -> list string -> list stmt
     | ("${" :: l) := let (x, rest) := consume_until "$}" l in
         (stmt.scope_stmt ((parser_core n) x)) :: (pc rest) 
     -- comments go nowhere
-    | ("$(" :: l) := let (x, rest) := consume_until "$)" l in (pc rest) 
+    | ("$(" :: l) := let (x, rest) := consume_until "$)" l in (pc rest)
+    | ("$[" :: filename :: "$]" :: rest) := stmt.include_stmt filename :: pc rest
     | [] := []
     | l := [(stmt.parse_error l)]
     end
 
-def parser (s : list string) : list stmt := ((parser_core s.length) s)
+def parser (s : list string) : list stmt := parser_core (length s) s
 
 def whitespace : char -> bool
 | ' ' := true
 | '\n' := true
 | default := false
 
-def lexer (s : string) : list string :=
-  ((s.split) whitespace).filter (λ r, r ≠ "")
+def lexer := filter (≠ "") ∘ split whitespace
 
 -- IO crap below this line
 open io
 
-def get_file : io char_buffer :=
-    fs.read_file "/Users/smooth/build/twitchcoq/metamath/miu2.mm"
-
 def main : io unit :=
-do a <- get_file,
-   let s := a.to_string,
-   let l := lexer s,
-   let p := stmt.scope_stmt (parser l),
-   put_str ((stmt_to_string p) ++ "\n")
+do s <- fs.read_file "/Users/jrn/code/twitchcoq/metamath/twoplustwo.mm",
+   let l := lexer s.to_string,
+   let p := stmt.scope_stmt $ parser l,
+   print_ln p -- uses to_string instance
+
 #eval main
