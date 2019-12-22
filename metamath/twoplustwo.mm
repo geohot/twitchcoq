@@ -1,5 +1,140 @@
 $[ lib/peano.mm $]
 
+$(
+  Doing this sort of thing from the bottom on stream is an impressive undertaking.
+  Unfortunately, there are a bunch of prerequisites needed to really get anywhere
+  starting from just the axioms, and propositional logic is a big one. In order to
+  have a good time using propositional logic, you need a library of ~200 basic
+  theorems in propositional logic. I will not do this, but instead just prove a few
+  requirements for the theorems of interest today.
+
+  These proofs are primarily borrowed from peano.mm1, which were themselves borrowed
+  from set.mm proofs. -Mario
+$)
+
+${
+  mpd.1 $e |- implies phi psi $.
+  mpd.2 $e |- implies phi implies psi chi $.
+  $( A -> B, A -> B -> C |- A -> C $)
+  mpd $p |- implies phi chi $=
+    ( logbinopimplies wff_logbinop ax-2 ax-mp ) FBAGZFCAGZDFFCBGAGFKJGEABCHII
+    $.
+$}
+
+${
+  syl.1 $e |- implies phi psi $.
+  syl.2 $e |- implies psi chi $.
+  $( A -> B, B -> C |- A -> C $)
+  syl $p |- implies phi chi $=
+    ( logbinopimplies wff_logbinop ax-1 ax-mp mpd ) ABCDFCBGZFKAGEKAHIJ $.
+$}
+
+$( A -> A $)
+id $p |- implies phi phi $=
+  ( logbinopimplies wff_logbinop ax-1 mpd ) ABAACZAAADAFDE $.
+
+$( !A -> A -> B $)
+absurd $p |- implies not phi implies phi psi $=
+  ( wff_not logbinopimplies wff_logbinop ax-1 ax-3 syl ) ACZDIBCZEDBAEIJFBAGH
+  $.
+
+${
+  com12.1 $e |- implies phi implies psi chi $.
+  $( A -> B -> C |- B -> A -> C $)
+  com12 $p |- implies psi implies phi chi $=
+    ( logbinopimplies wff_logbinop ax-1 ax-2 ax-mp syl ) BEBAFZECAFZBAGEECBFAFE
+    LKFDABCHIJ $.
+$}
+
+${
+  imidm.1 $e |- implies phi implies phi psi $.
+  $( A -> A -> B |- A -> B $)
+  imidm $p |- implies phi psi $=
+    ( logbinopimplies wff_logbinop id com12 mpd ) ADBAEZBCIABIFGH $.
+$}
+
+$( (!A -> A) -> A $)
+contra $p |- implies implies not phi phi phi $=
+  ( logbinopimplies wff_not wff_logbinop absurd ax-2 ax-mp ax-3 syl imidm ) BA
+  ACZDZALBLCZKDZBALDBBMADKDBNLDAMEKAMFGALHIJ $.
+
+$( !!A -> A $)
+notnot2 $p |- implies not not phi phi $=
+  ( wff_not logbinopimplies wff_logbinop absurd contra syl ) ABZBCAHDAHAEAFG
+  $.
+
+$( (B -> C) -> (A -> B) -> (A -> C) $)
+imim2 $p |- implies implies psi chi
+            implies implies phi psi
+                    implies phi chi $=
+  ( logbinopimplies wff_logbinop ax-1 ax-2 syl ) DCBEZDIAEDDCAEDBAEEIAFABCGH
+  $.
+
+$( (A -> !B) -> (B -> !A) $)
+con2 $p |- implies implies phi not psi
+                   implies psi not phi $=
+  ( logbinopimplies wff_not wff_logbinop notnot2 imim2 com12 ax-mp ax-3 syl )
+  CBDZAEZCLADZDZEZCNBECAOEZCPMEAFMQPOALGHINBJK $.
+
+$( A -> !!A $)
+notnot1 $p |- implies phi not not phi $=
+  ( logbinopimplies wff_not wff_logbinop id con2 ax-mp ) BACZHDBHCADHEHAFG $.
+
+${
+  con1i.1 $e |- implies not phi psi $.
+  $( !A -> B |- !B -> A $)
+  con1i $p |- implies not psi phi $=
+    ( logbinopimplies wff_not wff_logbinop notnot1 syl ax-3 ax-mp ) DBEZEZAEZFD
+    AKFMBLCBGHAKIJ $.
+$}
+
+$( (A -> B) -> (!B -> !A) $)
+con3 $p |- implies implies phi psi
+                   implies not psi not phi $=
+  ( logbinopimplies wff_logbinop wff_not notnot1 imim2 ax-mp con2 syl ) CBADZC
+  BEZEZADZCAELDCMBDCNKDBFABMGHALIJ $.
+
+$( A /\ B -> A $)
+andL $p |- implies and phi psi phi $=
+  ( logbinopand wff_logbinop logbinopimplies logbinopiff df-an bi1 ax-mp
+  absurd wff_not con1i syl ) CBADZEBKZADZKZAFQNDEQNDABGNQHIAPAOJLM $.
+
+$( A /\ B -> B $)
+andR $p |- implies and phi psi psi $=
+  ( logbinopand wff_logbinop logbinopimplies wff_not logbinopiff df-an bi1
+  ax-1 ax-mp con1i syl ) CBADZEBFZADZFZBGQNDEQNDABHNQIKBPOAJLM $.
+
+$( A -> B -> A /\ B $)
+andI $p |- implies phi implies psi and phi psi $=
+  ( logbinopimplies wff_not wff_logbinop logbinopand com12 con2 syl
+  logbinopiff id df-an bi2 ax-mp imim2 ) ACCBDZAEZDZBEZCFBAEZBEZACPQESQAPQKGQBH
+  ICTREZCUASEJRTEUBABLTRMNBRTONI $.
+
+${
+  andId.1 $e |- implies phi psi $.
+  andId.2 $e |- implies phi chi $.
+  $( A -> B -> A /\ B $)
+  andId $p |- implies phi and psi chi $=
+    ( logbinopand wff_logbinop logbinopimplies andI syl mpd ) ACFCBGZEABHLCGDBC
+    IJK $.
+$}
+
+${
+  imp.1 $e |- implies phi implies psi chi $.
+  $( A -> B -> C |- A /\ B -> C $)
+  imp $p |- implies and phi psi chi $=
+    ( logbinopand wff_logbinop andR logbinopimplies andL syl mpd ) EBAFZBCABGLA
+    HCBFABIDJK $.
+$}
+
+${
+  exp.1 $e |- implies and phi psi chi $.
+  $( A /\ B -> C |- A -> B -> C $)
+  exp $p |- implies phi implies psi chi $=
+    ( logbinopimplies logbinopand wff_logbinop andI imim2 ax-mp syl ) AEFBAGZBG
+    ZECBGZABHECLGENMGDBLCIJK $.
+$}
+
 wff_pa_ax1 $p wff not = 0 S x $=
   tzero varx tvar tsucc binpred_equals wff_atom wff_not
 $.
@@ -101,7 +236,15 @@ tmp3b $p |- implies and = 0 0 = S x S 0 iff = 0 S x = 0 S 0 $=
   eq-congr
 $.
 
-tmp3c $a |- implies = S x S 0 and = 0 0 = S x S 0 $.
+tmp3c $p |- implies = S x S 0 and = 0 0 = S x S 0 $=
+  ( tzero binpred_equals wff_atom logbinopimplies logbinopand tvar
+  wff_logbinop tsucc eq-refl andI ax-mp ) BBCDZEFAGIBICDZMHNHBJMNKL $.
+
+eqeq2 $p |- implies = s t iff = u s = u t $=
+  ( binpred_equals wff_atom logbinopimplies logbinopiff logbinopand andR
+  eq-sym wff_logbinop andL syl andId eq-trans exp bi3 mpd ) ABDEZFCADEZCBDEZKZG
+  UATKZSUATHUASKZHBADEZUAKTUDUAUESUAIUDSUESUALABJMNCBAOMPSFUATKFUCUBKSTUAHTSKZH
+  STKUAUFTSSTISTLNCABOMPTUAQMR $.
 
 $(
   phi: = S x S 0
@@ -109,7 +252,8 @@ $(
   chi: iff = 0 S x = 0 S 0
 $)
 
-tmp3d $a |- implies = S x S 0 iff = 0 S x = 0 S 0 $.
+tmp3d $p |- implies = S x S 0 iff = 0 S x = 0 S 0 $=
+  ( tvar tsucc tzero eqeq2 ) ABCDCDE $.
 
 $(
   phi: = x 0
@@ -117,11 +261,19 @@ $(
   chi: iff = 0 S x = 0 S 0
 $)
 
-tmp3e $a |- implies = x 0 iff = 0 S x = 0 S 0 $.
+tmp3e $p |- implies = x 0 iff = 0 S x = 0 S 0 $=
+  ( tvar tzero binpred_equals wff_atom tsucc logbinopiff wff_logbinop tmp3d
+  syl eq-suc ) ABZCDELFZCFZDEGCNDECMDEHLCKAIJ $.
 
 $( using ax-3 $)
 
-tmp3f $a |- implies iff 0 S x = 0 S 0 iff not = 0 S x not = 0 S 0 $.
+$( (A <-> B) -> (!A <-> !B) $)
+notbi $p |- implies iff phi psi iff not phi not psi $=
+  ( logbinopiff wff_logbinop logbinopimplies wff_not bi1 con3 syl bi2 bi3 mpd
+  ) CBADZEAFZBFZDZCONDZMEBADPABGABHIMEONDZEQPDMEABDRABJBAHINOKIL $.
+
+tmp3f $p |- implies iff = 0 S x = 0 S 0 iff not = 0 S x not = 0 S 0 $=
+  ( tzero tvar tsucc binpred_equals wff_atom notbi ) BACDEFBBDEFG $.
 
 $(
   phi: = x 0
@@ -131,7 +283,9 @@ $(
   psi -> chi = tmp3f
 $)
 
-cheat3 $a |- implies = x 0 iff not = 0 S x not = 0 S 0 $.
+cheat3 $p |- implies = x 0 iff not = 0 S x not = 0 S 0 $=
+  ( tvar tzero binpred_equals wff_atom logbinopiff tsucc wff_logbinop tmp3e
+  syl wff_not tmp3f ) ABZCDEFCCGDEZCMGDEZHFNKOKHAIALJ $.
 
 $( t,x,phi,chi,all_elim3_hyp1 $)
 nocheat4 $p |- implies
