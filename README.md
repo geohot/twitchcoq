@@ -10,7 +10,7 @@ Ideally, Coq and friends should be rewritten in metamath. It's really the future
 
 # metamath as execution
 
-We should be able to "run" a metamath program, aka proof without the target. It's a stack machine.
+We should be able to "run" a metamath program, aka proof without the target. It's a stack machine. The interpreter is only verifying that the proof is a valid program trace for the machine.
 
 # metamath on search
 
@@ -46,4 +46,18 @@ Imagine twitch, but VR. We'll rebuild the cybercafes, the revolutionary coffee s
 We need embodiment to be free from the tyranny of owned space. And we need formalization to be secure.
 
 The attacker vs defender battle may have been lost IRL. But in the world of information, the defender seems to win.
+
+# thoughts
+
+To build a machine that can program.
+
+* How much of programming exists without real world context?
+* Refactoring definitely is, optimizing for some notion of "readability".
+* Speed definitely is, optimizing for well, speed.
+
+metamath is just the program trace of a proof. Any language can be built on top of it to generate the trace.
+
+Instead of proving two programs the same, can we prove two program traces the same? Depends on how we define the same, in the metamath sense, it's only the output at the end, aka easy.
+
+Hehe, a program is just the compression of all of its traces.
 
