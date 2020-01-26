@@ -288,3 +288,226 @@ $)
      different technical meaning.  (Contributed by NM, 30-Sep-1992.) $)
   ax-3 $a |- ( ( -. ph -> -. ps ) -> ( ps -> ph ) ) $.
 
+$(
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        Logical equivalence
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+  The definition ~ df-bi in this section is our first definition, which
+  introduces and defines the biconditional connective ` <-> ` . We define a wff
+  of the form ` ( ph <-> ps ) ` as an abbreviation for
+  ` -. ( ( ph -> ps ) -> -. ( ps -> ph ) ) ` .
+
+  Unlike most traditional developments, we have chosen not to have a separate
+  symbol such as "Df." to mean "is defined as."  Instead, we will later use the
+  biconditional connective for this purpose ( ~ df-or is its first use), as it
+  allows us to use logic to manipulate definitions directly.  This greatly
+  simplifies many proofs since it eliminates the need for a separate mechanism
+  for introducing and eliminating definitions.
+$)
+
+  $( Declare the biconditional connective. $)
+  $c <-> $. $( Double arrow (read:  'if and only if' or
+               'is logically equivalent to') $)
+
+  $( Extend our wff definition to include the biconditional connective. $)
+  wb $a wff ( ph <-> ps ) $.
+
+  $( Define the biconditional (logical 'iff').
+
+     The definition ~ df-bi in this section is our first definition, which
+     introduces and defines the biconditional connective ` <-> ` .  We define a
+     wff of the form ` ( ph <-> ps ) ` as an abbreviation for
+     ` -. ( ( ph -> ps ) -> -. ( ps -> ph ) ) ` .
+
+     Unlike most traditional developments, we have chosen not to have a
+     separate symbol such as "Df." to mean "is defined as."  Instead, we will
+     later use the biconditional connective for this purpose ( ~ df-or is its
+     first use), as it allows us to use logic to manipulate definitions
+     directly.  This greatly simplifies many proofs since it eliminates the
+     need for a separate mechanism for introducing and eliminating
+     definitions.  Of course, we cannot use this mechanism to define the
+     biconditional itself, since it hasn't been introduced yet.  Instead, we
+     use a more general form of definition, described as follows.
+
+     In its most general form, a definition is simply an assertion that
+     introduces a new symbol (or a new combination of existing symbols, as in
+     ~ df-3an ) that is eliminable and does not strengthen the existing
+     language.  The latter requirement means that the set of provable
+     statements not containing the new symbol (or new combination) should
+     remain exactly the same after the definition is introduced.  Our
+     definition of the biconditional may look unusual compared to most
+     definitions, but it strictly satisfies these requirements.
+
+     The justification for our definition is that if we mechanically replace
+     ` ( ph <-> ps ) ` (the definiendum i.e. the thing being defined) with
+     ` -. ( ( ph -> ps ) -> -. ( ps -> ph ) ) ` (the definiens i.e. the
+     defining expression) in the definition, the definition becomes the
+     previously proved theorem ~ bijust .  It is impossible to use ~ df-bi to
+     prove any statement expressed in the original language that can't be
+     proved from the original axioms, because if we simply replace each
+     instance of ~ df-bi in the proof with the corresponding ~ bijust instance,
+     we will end up with a proof from the original axioms.
+
+     Note that from Metamath's point of view, a definition is just another
+     axiom - i.e. an assertion we claim to be true - but from our high level
+     point of view, we are not strengthening the language.  To indicate this
+     fact, we prefix definition labels with "df-" instead of "ax-".  (This
+     prefixing is an informal convention that means nothing to the Metamath
+     proof verifier; it is just a naming convention for human readability.)
+
+     After we define the constant true ` T. ` ( ~ df-tru ) and the constant
+     false ` F. ` ( ~ df-fal ), we will be able to prove these truth table
+     values: ` ( ( T. <-> T. ) <-> T. ) ` ( ~ trubitru ),
+     ` ( ( T. <-> F. ) <-> F. ) ` ( ~ trubifal ), ` ( ( F. <-> T. ) <-> F. ) `
+     ( ~ falbitru ), and ` ( ( F. <-> F. ) <-> T. ) ` ( ~ falbifal ).
+
+     See ~ dfbi1 , ~ dfbi2 , and ~ dfbi3 for theorems suggesting typical
+     textbook definitions of ` <-> ` , showing that our definition has the
+     properties we expect.  Theorem ~ dfbi1 is particularly useful if we want
+     to eliminate ` <-> ` from an expression to convert it to primitives.
+     Theorem ~ dfbi shows this definition rewritten in an abbreviated form
+     after conjunction is introduced, for easier understanding.
+
+     Contrast with ` \/ ` ( ~ df-or ), ` -> ` ( ~ wi ), ` -/\ ` ( ~ df-nan ),
+     and ` \/_ ` ( ~ df-xor ) .  In some sense ` <-> ` returns true if two
+     truth values are equal; ` = ` ( ~ df-cleq ) returns true if two classes
+     are equal.  (Contributed by NM, 27-Dec-1992.) $)
+  df-bi $a |- -. ( ( ( ph <-> ps ) -> -. ( ( ph -> ps ) -> -. ( ps -> ph ) ) )
+        -> -. ( -. ( ( ph -> ps ) -> -. ( ps -> ph ) ) -> ( ph <-> ps ) ) ) $.
+
+$(
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        Logical disjunction and conjunction
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+  Here we define disjunction (logical 'or') ` \/ ` ( ~ df-or ) and conjunction
+  (logical 'and') ` /\ ` ( ~ df-an ). We also define various rules for
+  simplifying and applying them, e.g., ~ olc , ~ orc , and ~ orcom .
+
+$)
+
+  $( Declare connectives for disjunction ('or') and conjunction ('and'). $)
+  $c \/ $. $( Vee (read:  'or') $)
+  $c /\ $. $( Wedge (read:  'and') $)
+
+  $( Extend wff definition to include disjunction ('or'). $)
+  wo $a wff ( ph \/ ps ) $.
+  $( Extend wff definition to include conjunction ('and'). $)
+  wa $a wff ( ph /\ ps ) $.
+
+  $( Define disjunction (logical 'or').  Definition of [Margaris] p. 49.  When
+     the left operand, right operand, or both are true, the result is true;
+     when both sides are false, the result is false.  For example, it is true
+     that ` ( 2 = 3 \/ 4 = 4 ) ` ( ~ ex-or ).  After we define the constant
+     true ` T. ` ( ~ df-tru ) and the constant false ` F. ` ( ~ df-fal ), we
+     will be able to prove these truth table values:
+     ` ( ( T. \/ T. ) <-> T. ) ` ( ~ truortru ), ` ( ( T. \/ F. ) <-> T. ) `
+     ( ~ truorfal ), ` ( ( F. \/ T. ) <-> T. ) ` ( ~ falortru ), and
+     ` ( ( F. \/ F. ) <-> F. ) ` ( ~ falorfal ).
+
+     This is our first use of the biconditional connective in a definition; we
+     use the biconditional connective in place of the traditional "<=def=>",
+     which means the same thing, except that we can manipulate the
+     biconditional connective directly in proofs rather than having to rely on
+     an informal definition substitution rule.  Note that if we mechanically
+     substitute ` ( -. ph -> ps ) ` for ` ( ph \/ ps ) ` , we end up with an
+     instance of previously proved theorem ~ biid .  This is the justification
+     for the definition, along with the fact that it introduces a new symbol
+     ` \/ ` .  Contrast with ` /\ ` ( ~ df-an ), ` -> ` ( ~ wi ), ` -/\ `
+     ( ~ df-nan ), and ` \/_ ` ( ~ df-xor ) .  (Contributed by NM,
+     27-Dec-1992.) $)
+  df-or $a |- ( ( ph \/ ps ) <-> ( -. ph -> ps ) ) $.
+
+  $( Define conjunction (logical 'and').  Definition of [Margaris] p. 49.  When
+     both the left and right operand are true, the result is true; when either
+     is false, the result is false.  For example, it is true that
+     ` ( 2 = 2 /\ 3 = 3 ) ` .  After we define the constant true ` T. `
+     ( ~ df-tru ) and the constant false ` F. ` ( ~ df-fal ), we will be able
+     to prove these truth table values: ` ( ( T. /\ T. ) <-> T. ) `
+     ( ~ truantru ), ` ( ( T. /\ F. ) <-> F. ) ` ( ~ truanfal ),
+     ` ( ( F. /\ T. ) <-> F. ) ` ( ~ falantru ), and
+     ` ( ( F. /\ F. ) <-> F. ) ` ( ~ falanfal ).
+
+     Contrast with ` \/ ` ( ~ df-or ), ` -> ` ( ~ wi ), ` -/\ ` ( ~ df-nan ),
+     and ` \/_ ` ( ~ df-xor ) .  (Contributed by NM, 5-Jan-1993.) $)
+  df-an $a |- ( ( ph /\ ps ) <-> -. ( ph -> -. ps ) ) $.
+
+$(
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        Abbreviated conjunction and disjunction of three wff's
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+$)
+
+  $( Extend wff definition to include 3-way disjunction ('or'). $)
+  w3o $a wff ( ph \/ ps \/ ch ) $.
+  $( Extend wff definition to include 3-way conjunction ('and'). $)
+  w3a $a wff ( ph /\ ps /\ ch ) $.
+
+  $( These abbreviations help eliminate parentheses to aid readability. $)
+
+  $( Define disjunction ('or') of three wff's.  Definition *2.33 of
+     [WhiteheadRussell] p. 105.  This abbreviation reduces the number of
+     parentheses and emphasizes that the order of bracketing is not important
+     by virtue of the associative law ~ orass .  (Contributed by NM,
+     8-Apr-1994.) $)
+  df-3or $a |- ( ( ph \/ ps \/ ch ) <-> ( ( ph \/ ps ) \/ ch ) ) $.
+
+  $( Define conjunction ('and') of three wff's.  Definition *4.34 of
+     [WhiteheadRussell] p. 118.  This abbreviation reduces the number of
+     parentheses and emphasizes that the order of bracketing is not important
+     by virtue of the associative law ~ anass .  (Contributed by NM,
+     8-Apr-1994.) $)
+  df-3an $a |- ( ( ph /\ ps /\ ch ) <-> ( ( ph /\ ps ) /\ ch ) ) $.
+
+$(
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        Logical 'nand' (Sheffer stroke)
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+$)
+
+  $( Declare connective for alternative denial ('nand'). $)
+  $c -/\ $. $( Overlined 'wedge' (read:  'nand') $)
+
+  $( Extend wff definition to include alternative denial ('nand'). $)
+  wnan $a wff ( ph -/\ ps ) $.
+
+  $( Define incompatibility, or alternative denial ('not-and' or 'nand').  This
+     is also called the Sheffer stroke, represented by a vertical bar, but we
+     use a different symbol to avoid ambiguity with other uses of the vertical
+     bar.  In the second edition of Principia Mathematica (1927), Russell and
+     Whitehead used the Sheffer stroke and suggested it as a replacement for
+     the "or" and "not" operations of the first edition.  However, in practice,
+     "or" and "not" are more widely used.  After we define the constant true
+     ` T. ` ( ~ df-tru ) and the constant false ` F. ` ( ~ df-fal ), we will be
+     able to prove these truth table values: ` ( ( T. -/\ T. ) <-> F. ) `
+     ( ~ trunantru ), ` ( ( T. -/\ F. ) <-> T. ) ` ( ~ trunanfal ),
+     ` ( ( F. -/\ T. ) <-> T. ) ` ( ~ falnantru ), and
+     ` ( ( F. -/\ F. ) <-> T. ) ` ( ~ falnanfal ).  Contrast with ` /\ `
+     ( ~ df-an ), ` \/ ` ( ~ df-or ), ` -> ` ( ~ wi ), and ` \/_ `
+     ( ~ df-xor ) .  (Contributed by Jeff Hoffman, 19-Nov-2007.) $)
+  df-nan $a |- ( ( ph -/\ ps ) <-> -. ( ph /\ ps ) ) $.
+
+$(
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        Logical 'xor'
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+$)
+
+  $( Declare connective for exclusive disjunction ('xor'). $)
+  $c \/_ $. $( Underlined 'vee' (read:  'xor') $)
+
+  $( Extend wff definition to include exclusive disjunction ('xor'). $)
+  wxo $a wff ( ph \/_ ps ) $.
+
+  $( Define exclusive disjunction (logical 'xor').  Return true if either the
+     left or right, but not both, are true.  After we define the constant true
+     ` T. ` ( ~ df-tru ) and the constant false ` F. ` ( ~ df-fal ), we will be
+     able to prove these truth table values: ` ( ( T. \/_ T. ) <-> F. ) `
+     ( ~ truxortru ), ` ( ( T. \/_ F. ) <-> T. ) ` ( ~ truxorfal ),
+     ` ( ( F. \/_ T. ) <-> T. ) ` ( ~ falxortru ), and
+     ` ( ( F. \/_ F. ) <-> F. ) ` ( ~ falxorfal ).  Contrast with ` /\ `
+     ( ~ df-an ), ` \/ ` ( ~ df-or ), ` -> ` ( ~ wi ), and ` -/\ `
+     ( ~ df-nan ) .  (Contributed by FL, 22-Nov-2010.) $)
+  df-xor $a |- ( ( ph \/_ ps ) <-> -. ( ph <-> ps ) ) $.
+
