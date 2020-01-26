@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 
+# 6 possible states
+# 2 values
+# 2 moves
+# 6*2*2 = 24
+# 24^10 possible for sigma(5, 2)
+
+# See Tree Normal Form from Bra66
+
 t0 = "B1L C1R A1L A1L H1L".split(" ")
 t1 = "A1L B1R D1R E1R C0R".split(" ")
 

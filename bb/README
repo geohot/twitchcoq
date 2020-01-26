@@ -1,0 +1,18 @@
+Attack Steps
+
+1. Determine a canonical numbering of all the machines that's easy to enumerate and refer to the machines by. Should be simple, yet remove many isomorphic machines.
+(put number here)
+
+2. Exclude all machines that halt with <= 4098 (current ones record)
+   Run for 47,176,870 steps
+(put number here)
+
+3. Exclude all machines with a repeated state
+(put number here)
+
+4. Now it's proving time
+
+How can we put the machines in a proof assistant?
+
+https://skelet.ludost.net/bb/nreg.html <-- claims only 43!
+
