@@ -59,5 +59,14 @@ metamath is just the program trace of a proof. Any language can be built on top 
 
 Instead of proving two programs the same, can we prove two program traces the same? Depends on how we define the same, in the metamath sense, it's only the output at the end, aka easy.
 
-Hehe, a program is just the compression of all of its traces.
+Hehe, a program is just the compression of all of its traces. QIRA is AI lah 
+
+# compression aside
+
+Lossy compression has no meaning, though there is something aside from lossless compression. There's task specific compression, dealt with this at comma. The trees on the side of the road have no effect on the driving problem, and that's why a straight up lossless compressor isn't the goal function.
+
+I think "Value Prediction Networks" (https://arxiv.org/abs/1707.03497) gets this right, would be fun to implement that. Correct to say you are just compressing to predict the reward?
+
+Then there's the universal goal function of compression progress (https://arxiv.org/abs/0812.4360) as a way of seperating noise (which will never be compressed), from signal (which will have a gradient of compression).
+
 
