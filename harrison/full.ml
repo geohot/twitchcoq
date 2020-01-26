@@ -45,6 +45,25 @@ module type Proofsystem =
     val concl : thm -> fol formula
   end;;
 
+(* Helper functions (need exists and itlist2) *)
+
+let mk_eq s t = Atom(R("=",[s;t]));;
+
+let rec occurs_in s t =
+  s = t or
+  match t with
+    Var y -> false
+  | Fn(f,args) -> exists (occurs_in s) args;;
+
+let rec free_in t fm =
+  match fm with
+    False
+  | True -> false
+  | Atom(R(p,args)) -> exists (occurs_in t) args
+  | Not(p) -> free_in t p
+  | And(p,q)|Or(p,q)|Imp(p,q)|Iff(p,q) -> free_in t p or free_in t q
+  | Forall(y,p)|Exists(y,p) -> not(occurs_in (Var y) t) & free_in t p;;
+
 (*
   Hmm, I don't exactly understand this. Need to learn ocaml syntax, this is like a class for the type?
 *)
@@ -94,3 +113,4 @@ let print_thm th =
   close_box();;
 
 #install_printer print_thm;;
+
