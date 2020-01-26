@@ -511,3 +511,893 @@ $)
      ( ~ df-nan ) .  (Contributed by FL, 22-Nov-2010.) $)
   df-xor $a |- ( ( ph \/_ ps ) <-> -. ( ph <-> ps ) ) $.
 
+$(
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+                True and false constants
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+$)
+
+$(
+-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-
+       Universal quantifier for use by df-tru
+-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-
+
+  Even though it isn't ordinarily part of propositional calculus, the universal
+  quantifier ` A. ` is introduced here so that the soundness of definition
+  ~ df-tru can be checked by the same algorithm that is used for predicate
+  calculus.  Its first real use is in definition ~ df-ex in the predicate
+  calculus section below.  For those who want propositional calculus to be
+  self-contained i.e. to use wff variables only, the alternate definition
+  ~ dftru2 may be adopted and this subsection moved down to the start of the
+  subsection with ~ wex below.  However, the use of ~ dftru2 as a definition
+  requires a more elaborate definition checking algorithm that we prefer to
+  avoid.
+
+$)
+
+  $( Declare new symbols needed for predicate calculus. $)
+  $c A. $. $( "inverted A" universal quantifier (read:  "for all") $)
+  $c setvar $. $( Individual variable type (read:  "the following is an
+             individual (set) variable" $)
+
+  $( Add 'setvar' as a typecode for bound variables. $)
+  $( $j syntax 'setvar'; bound 'setvar'; $)
+
+  ${
+    $v x $.
+    $( Let ` x ` be an individual variable (temporary declaration). $)
+    vx.wal $f setvar x $.
+    $( Extend wff definition to include the universal quantifier ('for all').
+       ` A. x ph ` is read " ` ph ` (phi) is true for all ` x ` ."  Typically,
+       in its final application ` ph ` would be replaced with a wff containing
+       a (free) occurrence of the variable ` x ` , for example ` x = y ` .  In
+       a universe with a finite number of objects, "for all" is equivalent to a
+       big conjunction (AND) with one wff for each possible case of ` x ` .
+       When the universe is infinite (as with set theory), such a
+       propositional-calculus equivalent is not possible because an infinitely
+       long formula has no meaning, but conceptually the idea is the same. $)
+    wal $a wff A. x ph $.
+  $}
+
+$(
+-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-
+        Equality predicate for use by df-tru
+-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-
+
+  Even though it isn't ordinarily part of propositional calculus, the equality
+  predicate ` = ` is introduced here so that the soundness of definition
+  ~ df-tru can be checked by the same algorithm as is used for predicate
+  calculus.  Its first real use is in theorem ~ equs3 in the predicate calculus
+  section below.  For those who want propositional calculus to be
+  self-contained i.e. to use wff variables only, the alternate definition
+  ~ dftru2 may be adopted and this subsection moved down to just above ~ weq
+  below.  However, the use of ~ dftru2 as a definition requires a more
+  elaborate definition checking algorithm that we prefer to avoid.
+$)
+
+  $c class $.
+
+  $( Add 'class' as a typecode. $)
+  $( $j syntax 'class'; $)
+
+  ${
+    $v x $.
+    $( Let ` x ` be an individual variable (temporary declaration). $)
+    vx.cv $f setvar x $.
+    $( This syntax construction states that a variable ` x ` , which has been
+       declared to be a setvar variable by $f statement vx, is also a class
+       expression.  This can be justified informally as follows.  We know that
+       the class builder ` { y | y e. x } ` is a class by ~ cab .  Since (when
+       ` y ` is distinct from ` x ` ) we have ` x = { y | y e. x } ` by
+       ~ cvjust , we can argue that the syntax " ` class x ` " can be viewed as
+       an abbreviation for " ` class { y | y e. x } ` ".  See the discussion
+       under the definition of class in [Jech] p. 4 showing that "Every set can
+       be considered to be a class."
+
+       While it is tempting and perhaps occasionally useful to view ~ cv as a
+       "type conversion" from a setvar variable to a class variable, keep in
+       mind that ~ cv is intrinsically no different from any other
+       class-building syntax such as ~ cab , ~ cun , or ~ c0 .
+
+       For a general discussion of the theory of classes and the role of ~ cv ,
+       see ~ http://us.metamath.org/mpeuni/mmset.html#class .
+
+       (The description above applies to set theory, not predicate calculus.
+       The purpose of introducing ` class x ` here, and not in set theory where
+       it belongs, is to allow us to express i.e.  "prove" the ~ weq of
+       predicate calculus from the ~ wceq of set theory, so that we don't
+       overload the ` = ` connective with two syntax definitions.  This is done
+       to prevent ambiguity that would complicate some Metamath parsers.) $)
+    cv $a class x $.
+  $}
+
+  $( Declare the equality predicate symbol. $)
+  $c = $.  $( Equal sign (read:  'is equal to') $)
+
+  ${
+    $v A $.
+    $v B $.
+    $( Temporary declarations of ` A ` and ` B ` . $)
+    cA.wceq $f class A $.
+    cB.wceq $f class B $.
+    $( Extend wff definition to include class equality.
+
+       For a general discussion of the theory of classes, see
+       ~ http://us.metamath.org/mpeuni/mmset.html#class .
+
+       (The purpose of introducing ` wff A = B ` here, and not in set theory
+       where it belongs, is to allow us to express i.e.  "prove" the ~ weq of
+       predicate calculus in terms of the ~ wceq of set theory, so that we
+       don't "overload" the ` = ` connective with two syntax definitions.  This
+       is done to prevent ambiguity that would complicate some Metamath
+       parsers.  For example, some parsers - although not the Metamath program
+       - stumble on the fact that the ` = ` in ` x = y ` could be the ` = ` of
+       either ~ weq or ~ wceq , although mathematically it makes no
+       difference.  The class variables ` A ` and ` B ` are introduced
+       temporarily for the purpose of this definition but otherwise not used in
+       predicate calculus.  See ~ df-cleq for more information on the set
+       theory usage of ~ wceq .) $)
+    wceq $a wff A = B $.
+  $}
+
+$(
+-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-
+                Define the true and false constants
+-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-
+$)
+
+  $c T. $.
+
+  $( ` T. ` is a wff. $)
+  wtru $a wff T. $.
+
+  ${
+    $v x $.
+    $v y $.
+    $( Temporary declarations of ` x ` and ` y ` for local use by ~ df-tru .
+       These will be redeclared globally in the predicate calculus section. $)
+    vx.tru $f setvar x $.
+    vy.tru $f setvar y $.
+    $( Soundness justification theorem for ~ df-tru .  (Contributed by Mario
+       Carneiro, 17-Nov-2013.)  (Revised by NM, 11-Jul-2019.) $)
+    trujust $p |- ( ( A. x x = x -> A. x x = x )
+              <-> ( A. y y = y -> A. y y = y ) ) $=
+      ( cv wceq wal wi id 2th ) ACZIDAEZJFBCZKDBEZLFJGLGH $.
+
+    $( Definition of the truth value "true", or "verum", denoted by ` T. ` .
+       This is a tautology, as proved by ~ tru .  In this definition, an
+       instance of ~ id is used as the definiens, although any tautology, such
+       as an axiom, can be used in its place.  This particular ~ id instance
+       was chosen so this definition can be checked by the same algorithm that
+       is used for predicate calculus.  This definition should be referenced
+       directly only by ~ tru , and other proofs should depend on ~ tru
+       (directly or indirectly) instead of this definition, since there are
+       many alternative ways to define ` T. ` .  (Contributed by Anthony Hart,
+       13-Oct-2010.)  (Revised by NM, 11-Jul-2019.)
+       (New usage is discouraged.) $)
+    df-tru $a |- ( T. <-> ( A. x x = x -> A. x x = x ) ) $.
+
+    $( The truth value ` T. ` is provable.  (Contributed by Anthony Hart,
+       13-Oct-2010.) $)
+    tru $p |- T. $=
+      ( vx.tru wtru cv wceq wal wi id df-tru mpbir ) BACZJDAEZKFKGAHI $.
+  $}
+
+  $c F. $.
+
+  $( ` F. ` is a wff. $)
+  wfal $a wff F. $.
+
+  $( Definition of the truth value "false", or "falsum", denoted by ` F. ` .
+     See also ~ df-tru .  (Contributed by Anthony Hart, 22-Oct-2010.) $)
+  df-fal $a |- ( F. <-> -. T. ) $.
+
+$(
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+       Half adder and full adder in propositional calculus
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+  Propositional calculus deals with truth values, which can be interpreted as
+  bits. Using this, we can define the half adder and full adder in pure
+  propositional calculus, and show their basic properties.
+
+  Here is a short description. We code the bit 0 by ` F. ` and 1 by ` T. ` .
+  Even though ` hadd ` and ` cadd ` are invariant under permutation of their
+  arguments, assume for the sake of concreteness that ` ph ` (resp. ` ps ` ) is
+  the i^th bit of the first (resp. second) number to add (with the convention
+  that the i^th bit is the multiple of 2^i in the base-2 representation), and
+  that ` ch ` is the i^th carry (with the convention that the 0^th carry is 0).
+  Then, ` hadd ( ph , ps , ch ) ` gives the i^th bit of the sum, and
+  ` cadd ( ph , ps , ch ) ` gives the (i+1)^th carry.
+  Then, addition is performed by iteration from i = 0 to
+  i = 1 + (max of the number of digits of the two summands) by "updating" the
+  carry.
+$)
+
+  $c hadd cadd $.
+  $c , $.  $( Comma (also used for unordered pair notation later) $)
+
+  $( Define the half adder (triple XOR).  (Contributed by Mario Carneiro,
+     4-Sep-2016.) $)
+  whad $a wff hadd ( ph , ps , ch ) $.
+
+  $( Define the half adder carry.  (Contributed by Mario Carneiro,
+     4-Sep-2016.) $)
+  wcad $a wff cadd ( ph , ps , ch ) $.
+
+  $( Define the half adder (triple XOR).  (Contributed by Mario Carneiro,
+     4-Sep-2016.) $)
+  df-had $a |- ( hadd ( ph , ps , ch ) <-> ( ( ph \/_ ps ) \/_ ch ) ) $.
+
+  $( Define the half adder carry, which is true when at least two arguments are
+     true.  (Contributed by Mario Carneiro, 4-Sep-2016.) $)
+  df-cad $a |- ( cadd ( ph , ps , ch ) <->
+    ( ( ph /\ ps ) \/ ( ch /\ ( ph \/_ ps ) ) ) ) $.
+
+$(
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#
+    Predicate calculus with equality:  Tarski's system S2 (1 rule, 6 schemes)
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#
+
+  Here we extend the language of wffs with predicate calculus, which allows us
+  to talk about individual objects in a domain of discussion (which for us will
+  be the universe of all sets, so we call them "setvar variables") and make
+  true/false statements about predicates, which are relationships between
+  objects, such as whether or not two objects are equal.  In addition, we
+  introduce universal quantification ("for all", e.g. ~ ax-4 ) in order to
+  make statements about whether a wff holds for every object in the domain of
+  discussion.  Later we introduce existential quantification ("there exists",
+  ~ df-ex ) which is defined in terms of universal quantification.
+
+  Our axioms are really axiom _schemes_, and our wff and setvar variables are
+  metavariables ranging over expressions in an underlying "object language."
+  This is explained here:  ~ mmset.html#axiomnote .
+
+  Our axiom system starts with the predicate calculus axiom schemes system S2
+  of Tarski defined in his 1965 paper, "A Simplified Formalization of Predicate
+  Logic with Identity" [Tarski].  System S2 is defined in the last paragraph on
+  p. 77, and repeated on p. 81 of [KalishMontague].  We do not include scheme
+  B5 (our ~ sp ) of system S2 since [KalishMontague] shows it to be logically
+  redundant (Lemma 9, p. 87, which we prove as theorem ~ spw below).
+
+  Theorem ~ spw can be used to prove any _instance_ of ~ sp having mutually
+  distinct setvar variables and no wff metavariables.  However, it seems that
+  ~ sp in its general form cannot be derived from only Tarski's schemes.  We do
+  not include B5 i.e. ~ sp as part of what we call "Tarski's system" because we
+  want it to be the smallest set of axioms that is logically complete with
+  no redundancies.  We later prove ~ sp as theorem ~ axc5 using the auxiliary
+  axioms that make our system metalogically complete.
+
+  Our version of Tarski's system S2 consists of propositional calculus
+  ( ~ ax-mp , ~ ax-1 , ~ ax-2 , ~ ax-3 ) plus ~ ax-gen , ~ ax-4 , ~ ax-5 ,
+  ~ ax-6 , ~ ax-7 , ~ ax-8 , and ~ ax-9 . The last 3 are equality axioms that
+  represent 3 sub-schemes of Tarski's scheme B8.  Due to its side-condition
+  ("where ` ph ` is an atomic formula and ` ps ` is obtained by replacing an
+  occurrence of the variable ` x ` by the variable ` y ` "), we cannot
+  represent his B8 directly without greatly complicating our scheme language,
+  but the simpler schemes ~ ax-7 , ~ ax-8 , and ~ ax-9 are sufficient for set
+  theory and much easier to work with.
+
+  Tarski's system is exactly equivalent to the traditional axiom system in most
+  logic textbooks but has the advantage of being easy to manipulate with a
+  computer program, and its simpler metalogic (with no built-in notions of
+  "free variable" and "proper substitution") is arguably easier for a
+  non-logician human to follow step by step in a proof (where "follow" means
+  being able to identify the substitutions that were made, without necessarily
+  a higher-level understanding).  In particular, it is logically complete in
+  that it can derive all possible object-language theorems of predicate
+  calculus with equality, i.e. the same theorems as the traditional system can
+  derive.
+
+  However, for efficiency (and indeed a key feature that makes Metamath
+  successful), our system is designed to derive reusable theorem schemes
+  (rather than object-language theorems) from other schemes.  From this
+  "metalogical" point of view, Tarski's S2 is not complete.  For example, we
+  cannot derive scheme ~ sp , even though (using ~ spw ) we can derive all
+  instances of it that don't involve wff metavariables or bundled set
+  metavariables.  (Two set metavariables are "bundled" if they can be
+  substituted with the same set metavariable i.e. do not have a $d distinct
+  variable proviso.)  Later we will introduce auxiliary axiom schemes ~ ax-10 ,
+  ~ ax-11 , ~ ax-12 , and ~ ax-13 that are metatheorems of Tarski's system
+  (i.e. are logically redundant) but which give our system the property of
+  "metalogical completeness," allowing us to prove directly (instead of, say,
+  by induction on formula length) all possible schemes that can be expressed in
+  our language.
+
+$)
+
+$(
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    Universal quantifier (continued); define "exists" and "not free"
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+  The universal quantifier was introduced above in ~ wal for use by ~ df-tru .
+  See the comments in that section.  In this section, we continue with the
+  first "real" use of it.
+$)
+
+  $( Declare some names for individual variables. $)
+  $v x $.
+  $v y $.
+  $v z $.
+  $v w $.
+  $v v $.
+  $v u $.
+  $v t $.
+  $( Let ` x ` be an individual variable. $)
+  vx $f setvar x $.
+  $( Let ` y ` be an individual variable. $)
+  vy $f setvar y $.
+  $( Let ` z ` be an individual variable. $)
+  vz $f setvar z $.
+  $( Let ` w ` be an individual variable. $)
+  vw $f setvar w $.
+  $( Let ` v ` be an individual variable. $)
+  vv $f setvar v $.
+  $( Let ` u ` be an individual variable. $)
+  vu $f setvar u $.
+  $( Let ` t ` be an individual variable. $)
+  vt $f setvar t $.
+
+  $( Register 'A.' as a primitive expression (lacking a definition). $)
+  $( $j primitive 'wal'; $)
+
+  $( Declare the existential quantifier symbol. $)
+  $c E. $.   $( Backwards E (read:  "there exists") $)
+
+  $( Extend wff definition to include the existential quantifier ("there
+     exists"). $)
+  wex $a wff E. x ph $.
+
+  $( Define existential quantification. ` E. x ph ` means "there exists at
+     least one set ` x ` such that ` ph ` is true."  Definition of [Margaris]
+     p. 49.  (Contributed by NM, 10-Jan-1993.) $)
+  df-ex $a |- ( E. x ph <-> -. A. x -. ph ) $.
+
+  $( Theorem 19.7 of [Margaris] p. 89.  (Contributed by NM, 12-Mar-1993.) $)
+  alnex $p |- ( A. x -. ph <-> -. E. x ph ) $=
+    ( wex wn wal df-ex con2bii ) ABCADBEABFG $.
+
+  $c F/ $.  $( The not-free symbol. $)
+
+  $( Extend wff definition to include the not-free predicate. $)
+  wnf $a wff F/ x ph $.
+
+  $( Define the not-free predicate for wffs.  This is read " ` x ` is not free
+     in ` ph ` ".  Not-free means that the value of ` x ` cannot affect the
+     value of ` ph ` , e.g., any occurrence of ` x ` in ` ph ` is effectively
+     bound by a "for all" or something that expands to one (such as "there
+     exists").  In particular, substitution for a variable not free in a wff
+     does not affect its value ( ~ sbf ).  An example of where this is used is
+     ~ stdpc5 .  See ~ nf2 for an alternative definition which does not involve
+     nested quantifiers on the same variable.
+
+     Not-free is a commonly used constraint, so it is useful to have a notation
+     for it.  Surprisingly, there is no common formal notation for it, so here
+     we devise one.  Our definition lets us work with the not-free notion
+     within the logic itself rather than as a metalogical side condition.
+
+     To be precise, our definition really means "effectively not free," because
+     it is slightly less restrictive than the usual textbook definition for
+     not-free (which only considers syntactic freedom).  For example, ` x ` is
+     effectively not free in the bare expression ` x = x ` (see ~ nfequid ),
+     even though ` x ` would be considered free in the usual textbook
+     definition, because the value of ` x ` in the expression ` x = x ` cannot
+     affect the truth of the expression (and thus substitution will not change
+     the result).
+
+     This predicate only applies to wffs.  See ~ df-nfc for a not-free
+     predicate for class variables.  (Contributed by Mario Carneiro,
+     11-Aug-2016.) $)
+  df-nf $a |- ( F/ x ph <-> A. x ( ph -> A. x ph ) ) $.
+
+$(
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+       Rule scheme ax-gen (Generalization)
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+$)
+
+  ${
+    ax-g.1 $e |- ph $.
+    $( Rule of Generalization.  The postulated inference rule of predicate
+       calculus.  See e.g.  Rule 2 of [Hamilton] p. 74.  This rule says that if
+       something is unconditionally true, then it is true for all values of a
+       variable.  For example, if we have proved ` x = x ` , we can conclude
+       ` A. x x = x ` or even ` A. y x = x ` .  Theorem ~ allt shows the
+       special case ` A. x T. ` .  Theorem ~ spi shows we can go the other way
+       also: in other words we can add or remove universal quantifiers from the
+       beginning of any theorem as required.  (Contributed by NM,
+       3-Jan-1993.) $)
+    ax-gen $a |- A. x ph $.
+  $}
+
+$(
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+         Axiom scheme ax-4 (Quantified Implication)
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+$)
+
+  $( Axiom of Quantified Implication.  Axiom C4 of [Monk2] p. 105 and Theorem
+     19.20 of [Margaris] p. 90.  It is restated as ~ alim for labelling
+     consistency.  It should be used only by ~ alim .  (Contributed by NM,
+     21-May-2008.)  (New usage is discouraged.) $)
+  ax-4 $a |- ( A. x ( ph -> ps ) -> ( A. x ph -> A. x ps ) ) $.
+
+$(
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+  Axiom scheme ax-5 (Distinctness) - first use of $d
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+$)
+
+  ${
+    $d x ph $.
+    $( Axiom of Distinctness.  This axiom quantifies a variable over a formula
+       in which it does not occur.  Axiom C5 in [Megill] p. 444 (p. 11 of the
+       preprint).  Also appears as Axiom B6 (p. 75) of system S2 of [Tarski]
+       p. 77 and Axiom C5-1 of [Monk2] p. 113.
+
+       (See comments in ~ ax5ALT about the logical redundancy of ~ ax-5 in the
+       presence of our obsolete axioms.)
+
+       This axiom essentially says that if ` x ` does not occur in ` ph ` ,
+       i.e. ` ph ` does not depend on ` x ` in any way, then we can add the
+       quantifier ` A. x ` to ` ph ` with no further assumptions.  By ~ sp , we
+       can also remove the quantifier (unconditionally).  (Contributed by NM,
+       10-Jan-1993.) $)
+    ax-5 $a |- ( ph -> A. x ph ) $.
+  $}
+
+$(
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        Define proper substitution
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+$)
+
+  $c [ $. $( Left bracket $)
+  $c / $. $( Slash. $)
+  $c ] $.  $( Right bracket $)
+
+  $( Extend wff definition to include proper substitution (read "the wff that
+     results when ` y ` is properly substituted for ` x ` in wff ` ph ` ").
+     (Contributed by NM, 24-Jan-2006.) $)
+  wsb $a wff [ y / x ] ph $.
+
+  $( Indicate that the variable "y" is free in wsb even though it could
+     potentially bind occurrences in "ph". $)
+  $( $j free_var 'wsb' with 'y'; $)
+
+  $( Define proper substitution.  Remark 9.1 in [Megill] p. 447 (p. 15 of the
+     preprint).  For our notation, we use ` [ y / x ] ph ` to mean "the wff
+     that results from the proper substitution of ` y ` for ` x ` in the wff
+     ` ph ` ."  That is, ` y ` properly replaces ` x ` .  For example,
+     ` [ x / y ] z e. y ` is the same as ` z e. x ` , as shown in ~ elsb4 .  We
+     can also use ` [ y / x ] ph ` in place of the "free for" side condition
+     used in traditional predicate calculus; see, for example, ~ stdpc4 .
+
+     Our notation was introduced in Haskell B. Curry's _Foundations of
+     Mathematical Logic_ (1977), p. 316 and is frequently used in textbooks of
+     lambda calculus and combinatory logic.  This notation improves the common
+     but ambiguous notation, " ` ph ( y ) ` is the wff that results when ` y `
+     is properly substituted for ` x ` in ` ph ( x ) ` ."  For example, if the
+     original ` ph ( x ) ` is ` x = y ` , then ` ph ( y ) ` is ` y = y ` , from
+     which we obtain that ` ph ( x ) ` is ` x = x ` .  So what exactly does
+     ` ph ( x ) ` mean?  Curry's notation solves this problem.
+
+     In most books, proper substitution has a somewhat complicated recursive
+     definition with multiple cases based on the occurrences of free and bound
+     variables in the wff.  Instead, we use a single formula that is exactly
+     equivalent and gives us a direct definition.  We later prove that our
+     definition has the properties we expect of proper substitution (see
+     theorems ~ sbequ , ~ sbcom2 and ~ sbid2v ).
+
+     Note that our definition is valid even when ` x ` and ` y ` are replaced
+     with the same variable, as ~ sbid shows.  We achieve this by having ` x `
+     free in the first conjunct and bound in the second.  We can also achieve
+     this by using a dummy variable, as the alternate definition ~ dfsb7 shows
+     (which some logicians may prefer because it doesn't mix free and bound
+     variables).  Another version that mixes free and bound variables is
+     ~ dfsb3 .  When ` x ` and ` y ` are distinct, we can express proper
+     substitution with the simpler expressions of ~ sb5 and ~ sb6 .
+
+     There are no restrictions on any of the variables, including what
+     variables may occur in wff ` ph ` .  (Contributed by NM, 10-May-1993.) $)
+  df-sb $a |- ( [ y / x ] ph <->
+              ( ( x = y -> ph ) /\ E. x ( x = y /\ ph ) ) ) $.
+
+$(
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+                Axiom scheme ax-6 (Existence)
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+$)
+
+  $( Axiom of Existence.  One of the equality and substitution axioms of
+     predicate calculus with equality.  This axiom tells us is that at least
+     one thing exists.  In this form (not requiring that ` x ` and ` y ` be
+     distinct) it was used in an axiom system of Tarski (see Axiom B7' in
+     footnote 1 of [KalishMontague] p. 81.)  It is equivalent to axiom scheme
+     C10' in [Megill] p. 448 (p. 16 of the preprint); the equivalence is
+     established by ~ axc10 and ~ ax6fromc10 .  A more convenient form of this
+     axiom is ~ ax6e , which has additional remarks.
+
+     Raph Levien proved the independence of this axiom from the other logical
+     axioms on 12-Apr-2005.  See item 16 at
+     ~ http://us.metamath.org/award2003.html .
+
+     ~ ax-6 can be proved from the weaker version ~ ax6v requiring that the
+     variables be distinct; see theorem ~ ax6 .
+
+     ~ ax-6 can also be proved from the Axiom of Separation (in the form that
+     we use that axiom, where free variables are not universally quantified).
+     See theorem ~ ax6vsep .
+
+     Except by ~ ax6v , this axiom should not be referenced directly.  Instead,
+     use theorem ~ ax6 .  (Contributed by NM, 10-Jan-1993.)
+     (New usage is discouraged.) $)
+  ax-6 $a |- -. A. x -. x = y $.
+
+$(
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+                   Axiom scheme ax-7 (Equality)
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+$)
+
+  $( Axiom of Equality.  One of the equality and substitution axioms of
+     predicate calculus with equality.  This is similar to, but not quite, a
+     transitive law for equality (proved later as ~ equtr ).  This axiom scheme
+     is a sub-scheme of Axiom Scheme B8 of system S2 of [Tarski], p. 75, whose
+     general form cannot be represented with our notation.  Also appears as
+     Axiom C7 of [Monk2] p. 105 and Axiom Scheme C8' in [Megill] p. 448 (p. 16
+     of the preprint).
+
+     The equality symbol was invented in 1527 by Robert Recorde.  He chose a
+     pair of parallel lines of the same length because "noe .2. thynges, can be
+     moare equalle."
+
+     Note that this axiom is still valid even when any two or all three of
+     ` x ` , ` y ` , and ` z ` are replaced with the same variable since they
+     do not have any distinct variable (Metamath's $d) restrictions.  Because
+     of this, we say that these three variables are "bundled" (a term coined by
+     Raph Levien).  (Contributed by NM, 10-Jan-1993.) $)
+  ax-7 $a |- ( x = y -> ( x = z -> y = z ) ) $.
+
+$(
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        Axiom scheme ax-8 (Left Equality for Binary Predicate)
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+$)
+
+  $( Axiom of Left Equality for Binary Predicate.  One of the equality and
+     substitution axioms for a non-logical predicate in our predicate calculus
+     with equality.  It substitutes equal variables into the left-hand side of
+     an arbitrary binary predicate ` e. ` , which we will use for the set
+     membership relation when set theory is introduced.  This axiom scheme is a
+     sub-scheme of Axiom Scheme B8 of system S2 of [Tarski], p. 75, whose
+     general form cannot be represented with our notation.  Also appears as
+     Axiom scheme C12' in [Megill] p. 448 (p. 16 of the preprint).
+     "Non-logical" means that the predicate is not a primitive of predicate
+     calculus proper but instead is an extension to it.  "Binary" means that
+     the predicate has two arguments.  In a system of predicate calculus with
+     equality, like ours, equality is not usually considered to be a
+     non-logical predicate.  In systems of predicate calculus without equality,
+     it typically would be.  (Contributed by NM, 30-Jun-1993.) $)
+  ax-8 $a |- ( x = y -> ( x e. z -> y e. z ) ) $.
+
+$(
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        Axiom scheme ax-9 (Right Equality for Binary Predicate)
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+$)
+
+  $( Axiom of Right Equality for Binary Predicate.  One of the equality and
+     substitution axioms for a non-logical predicate in our predicate calculus
+     with equality.  It substitutes equal variables into the right-hand side of
+     an arbitrary binary predicate ` e. ` , which we will use for the set
+     membership relation when set theory is introduced.  This axiom scheme is a
+     sub-scheme of Axiom Scheme B8 of system S2 of [Tarski], p. 75, whose
+     general form cannot be represented with our notation.  Also appears as
+     Axiom scheme C13' in [Megill] p. 448 (p. 16 of the preprint).
+     (Contributed by NM, 21-Jun-1993.) $)
+  ax-9 $a |- ( x = y -> ( z e. x -> z e. y ) ) $.
+
+$(
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+      Logical redundancy of ax-10 , ax-11 , ax-12 , ax-13
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+  The original axiom schemes of Tarski's predicate calculus are ~ ax-4 ,
+  ~ ax-5 , ~ ax6v , ~ ax-7 , ~ ax-8 , and ~ ax-9 , together with rule
+  ~ ax-gen .  See ~ http://us.metamath.org/mpeuni/mmset.html#compare .  They
+  are given as axiom schemes B4 through B8 in [KalishMontague] p. 81.  These
+  are shown to be logically complete by Theorem 1 of [KalishMontague] p. 85.
+
+  The axiom system of set.mm includes the auxiliary axiom schemes ~ ax-10 ,
+  ~ ax-11 , ~ ax-12 , and ~ ax-13 , which are not part of Tarski's axiom
+  schemes.  Each object language instance of them is provable from Tarski's
+  axioms, so they are logically redundant.  However, they are conjectured not
+  to be provable directly _as schemes_ from Tarski's axiom schemes using only
+  Metamath's direct substitution rule.  They are used to make our system
+  "metalogically complete" i.e. able to prove directly all possible schemes
+  with wff and set metavariables, bundled or not, whose object-language
+  instances are valid.  ( ~ ax-12 has been proved to be required; see
+  ~ http://us.metamath.org/award2003.html#9a .  Metalogical independence of the
+  other three are open problems.)
+
+  (There are additional predicate calculus axiom schemes included in set.mm
+  such as ~ ax-c5 , but they can all be proved as theorems from the above.)
+
+  Terminology:  Two set (individual) metavariables are "bundled" in an axiom or
+  theorem scheme when there is no distinct variable constraint ($d) imposed on
+  them.  (The term "bundled" is due to Raph Levien.)  For example, the ` x `
+  and ` y ` in ~ ax-6 are bundled, but they are not in ~ ax6v . We also say
+  that a scheme is bundled when it has at least one pair of bundled set
+  metavariables.  If distinct variable conditions are added to all set
+  metavariable pairs in a bundled scheme, we call that the "principal" instance
+  of the bundled scheme.  For example, ~ ax6v is the principal instance of
+  ~ ax-6 . Whenever a common variable is substituted for two or more bundled
+  variables in an axiom or theorem scheme, we call the substitution instance
+  "degenerate".  For example, the instance ` -. A. x -. x = x ` of ~ ax-6 is
+  degenerate.  An advantage of bundling is ease of use since there are fewer
+  distinct variable restrictions ($d) to be concerned with.  There is also a
+  small economy in being able to state principal and degenerate instances
+  simultaneously.  A disadvantage is that bundling may present difficulties in
+  translations to other proof languages, which typically lack the concept (in
+  part because their variables often represent the variables of the object
+  language rather than metavariables ranging over them).
+
+  Because Tarski's axiom schemes are logically complete, they can be used to
+  prove any object-language instance of ~ ax-10 , ~ ax-11 , ~ ax-12 , and
+  ~ ax-13 . "Translating" this to Metamath, it means that Tarski's axioms can
+  prove any substitution instance of ~ ax-10 , ~ ax-11 , ~ ax-12 , or ~ ax-13
+  in which (1) there are no wff metavariables and (2) all set metavariables are
+  mutually distinct i.e. are not bundled.  In effect this is mimicking the
+  object language by pretending that each set metavariable is an
+  object-language variable.  (There may also be specific instances with wff
+  metavariables and/or bundling that are directly provable from Tarski's axiom
+  schemes, but it isn't guaranteed.  Whether all of them are possible is part
+  of the still open metalogical independence problem for our additional axiom
+  schemes.)
+
+  It can be useful to see how this can be done, both to show that our
+  additional schemes are valid metatheorems of Tarski's system and to be able
+  to translate object language instances of our proofs into proofs that would
+  work with a system using only Tarski's original schemes.  In addition, it may
+  (or may not) provide insight into the conjectured metalogical independence of
+  our additional schemes.
+
+  The theorem schemes ~ ax10w , ~ ax11w , ~ ax12w , and ~ ax13w are derived
+  using only Tarski's axiom schemes, showing that Tarski's schemes can be used
+  to derive all substitution instances of ~ ax-10 , ~ ax-11 , ~ ax-12 , and
+  ~ ax-13 meeting conditions (1) and (2).  (The "w" suffix stands for "weak
+  version".)  Each hypothesis of ~ ax10w , ~ ax11w , and ~ ax12w is of the form
+  ` ( x = y -> ( ph <-> ps ) ) ` where ` ps ` is an auxiliary or "dummy" wff
+  metavariable in which ` x ` doesn't occur.  We can show by induction on
+  formula length that the hypotheses can be eliminated in all cases meeting
+  conditions (1) and (2).  The example ~ ax12wdemo illustrates the techniques
+  (equality theorems and bound variable renaming) used to achieve this.
+
+  We also show the degenerate instances for axioms with bundled variables in
+  ~ ax11dgen , ~ ax12dgen , ~ ax13dgen1 , ~ ax13dgen2 , ~ ax13dgen3 , and
+  ~ ax13dgen4 . (Their proofs are trivial, but we include them to be thorough.)
+  Combining the principal and degenerate cases _outside_ of Metamath, we show
+  that the bundled schemes ~ ax-10 , ~ ax-11 , ~ ax-12 , and ~ ax-13 are
+  schemes of Tarski's system, meaning that all object language instances they
+  generate are theorems of Tarski's system.
+
+  It is interesting that Tarski used the bundled scheme ~ ax-6 in an older
+  system, so it seems the main purpose of his later ~ ax6v was just to show
+  that the weaker unbundled form is sufficient rather than an aesthetic
+  objection to bundled free and bound variables.  Since we adopt the
+  bundled ~ ax-6 as our official axiom, we  show that the degenerate
+  instance holds in ~ ax6dgen .
+
+  The case of ~ sp is curious:  originally an axiom of Tarski's system, it was
+  proved logically redundant by Lemma 9 of [KalishMontague] p. 86.  However,
+  the proof is by induction on formula length, and the scheme form
+  ` A. x ph -> ph ` apparently cannot be proved directly from Tarski's other
+  axiom schemes.  The best we can do seems to be ~ spw , again requiring
+  substitution instances of ` ph ` that meet conditions (1) and (2) above.
+  Note that our direct proof ~ sp requires ~ ax-12 , which is not part of
+  Tarski's system.
+
+$)
+
+$(
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#
+   Predicate calculus with equality:  Auxiliary axiom schemes (4 schemes)
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#
+
+  In this section we introduce four additional schemes ~ ax-10 , ~ ax-11 ,
+  ~ ax-12 , and ~ ax-13 that are not part of Tarski's system but can be proved
+  (outside of Metamath) as theorem schemes of Tarski's system.  These are
+  needed to give our system the property of "metalogical completeness," which
+  means that we can prove (with Metamath) all possible theorem schemes
+  expressible in our language of wff metavariables ranging over object-language
+  wffs and set metavariables ranging over object-language individual variables.
+
+  To show that these schemes are valid metatheorems of Tarski's system S2,
+  above we proved from Tarski's system theorems ~ ax10w , ~ ax11w , ~ ax12w ,
+  and ~ ax13w , which show that any object-language instance of these schemes
+  (emulated by having no wff metavariables and requiring all set
+  metavariables to be mutually distinct) can be proved using only the schemes
+  in Tarski's system S2.
+
+  An open problem is to show that these four additional schemes are mutually
+  _metalogically_ independent and metalogically independent from Tarski's.  So
+  far, independence of ~ ax-12 from all others has been shown, and
+  independence of Tarski's ~ ax-6 from all others has been shown; see
+  items 9a and 11 on ~ http://us.metamath.org/award2003.html .
+
+$)
+
+$(
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+              Axiom scheme ax-10 (Quantified Negation)
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+$)
+
+  $( Axiom of Quantified Negation.  Axiom C5-2 of [Monk2] p. 113.  This axiom
+     scheme is logically redundant (see ~ ax10w ) but is used as an auxiliary
+     axiom to achieve metalogical completeness.  It means that ` x ` is not
+     free in ` -. A. x ph ` (Contributed by NM, 21-May-2008.)  Use its alias
+     ~ hbn1 instead.  (New usage is discouraged.) $)
+  ax-10 $a |- ( -. A. x ph -> A. x -. A. x ph ) $.
+
+$(
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+            Axiom scheme ax-11 (Quantifier Commutation)
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+$)
+
+  $( Axiom of Quantifier Commutation.  This axiom says universal quantifiers
+     can be swapped.  Axiom scheme C6' in [Megill] p. 448 (p. 16 of the
+     preprint).  Also appears as Lemma 12 of [Monk2] p. 109 and Axiom C5-3 of
+     [Monk2] p. 113.  This axiom scheme is logically redundant (see ~ ax11w )
+     but is used as an auxiliary axiom to achieve metalogical completeness.
+     (Contributed by NM, 12-Mar-1993.) $)
+  ax-11 $a |- ( A. x A. y ph -> A. y A. x ph ) $.
+
+$(
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+           Axiom scheme ax-12 (Substitution)
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+$)
+
+  $( Axiom of Substitution.  One of the 5 equality axioms of predicate
+     calculus.  The final consequent ` A. x ( x = y -> ph ) ` is a way of
+     expressing " ` y ` substituted for ` x ` in wff ` ph ` " (cf. ~ sb6 ).  It
+     is based on Lemma 16 of [Tarski] p. 70 and Axiom C8 of [Monk2] p. 105,
+     from which it can be proved by cases.
+
+     The original version of this axiom was ~ ax-c15 and was replaced with this
+     shorter ~ ax-12 in Jan. 2007.  The old axiom is proved from this one as
+     theorem ~ axc15 .  Conversely, this axiom is proved from ~ ax-c15 as
+     theorem ~ ax12 .
+
+     Juha Arpiainen proved the metalogical independence of this axiom (in the
+     form of the older axiom ~ ax-c15 ) from the others on 19-Jan-2006.  See
+     item 9a at ~ http://us.metamath.org/award2003.html .
+
+     See ~ ax12v and ~ ax12v2 for other equivalents of this axiom that (unlike
+     this axiom) have distinct variable restrictions.
+
+     This axiom scheme is logically redundant (see ~ ax12w ) but is used as an
+     auxiliary axiom to achieve metalogical completeness.  (Contributed by NM,
+     22-Jan-2007.) $)
+  ax-12 $a |- ( x = y -> ( A. y ph -> A. x ( x = y -> ph ) ) ) $.
+
+$(
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+          Axiom scheme ax-13 (Quantified Equality)
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+$)
+
+  $( Axiom of Quantified Equality.  One of the equality and substitution axioms
+     of predicate calculus with equality.
+
+     An equivalent way to express this axiom that may be easier to understand
+     is ` ( -. x = y -> ( -. x = z -> ( y = z -> A. x y = z ) ) ) ` (see
+     ~ ax13b ).  Recall that in the intended interpretation, our variables are
+     metavariables ranging over the variables of predicate calculus (the object
+     language).  In order for the first antecedent ` -. x = y ` to hold, ` x `
+     and ` y ` must have different values and thus cannot be the same
+     object-language variable (so they are effectively "distinct variables"
+     even though no $d is present).  Similarly, ` x ` and ` z ` cannot be the
+     same object-language variable.  Therefore, ` x ` will not occur in the wff
+     ` y = z ` when the first two antecedents hold, so analogous to ~ ax-5 ,
+     the conclusion ` ( y = z -> A. x y = z ) ` follows.  Note that ~ ax-5
+     cannot prove this directly because it requires $d statements.
+
+     The original version of this axiom was ~ ax-c9 and was replaced with this
+     shorter ~ ax-13 in December 2015.  The old axiom is proved from this one
+     as theorem ~ axc9 .  Conversely, this axiom is proved from ~ ax-c9 as
+     theorem ~ ax13 .
+
+     The primary purpose of this axiom is to provide a way to introduce the
+     quantifier ` A. x ` on ` y = z ` even when ` x ` and ` y ` are substituted
+     with the same variable.  In this case, the first antecedent becomes
+     ` -. x = x ` and the axiom still holds.
+
+     Although this version is shorter, the original version ~ axc9 may be more
+     practical to work with because of the "distinctor" form of its
+     antecedents.  A typical application of ~ axc9 is in ~ dvelimh which
+     converts a distinct variable pair to the distinctor antecedent
+     ` -. A. x x = y ` .  In particular, it is conjectured that it is not
+     possible to prove ~ ax6 from ~ ax6v without this axiom.
+
+     This axiom can be weakened if desired by adding distinct variable
+     restrictions on pairs ` x , z ` and ` y , z ` .  To show that, we add
+     these restrictions to theorem ~ ax13v and use only ~ ax13v for further
+     derivations.  Thus, ~ ax13v should be the only theorem referencing this
+     axiom.  Other theorems can reference either ~ ax13v (preferred) or
+     ~ ax13 .
+
+     This axiom scheme is logically redundant (see ~ ax13w ) but is used as an
+     auxiliary axiom to achieve metalogical completeness (i.e. so that all
+     possible cases of bundling can be proved; see text linked at
+     ~ mmtheorems.html#wal ).  It is not known whether this axiom can be
+     derived from the others.  (Contributed by NM, 21-Dec-2015.)
+     (New usage is discouraged.) $)
+  ax-13 $a |- ( -. x = y -> ( y = z -> A. x y = z ) ) $.
+
+$(
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#
+               Existential uniqueness
+#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#
+$)
+
+  $( Declare new symbols needed for uniqueness notation. $)
+  $c E! $.  $( Backwards E exclamation point. $)
+  $c E* $.  $( Backwards E superscript *. $)
+
+  $( Extend wff definition to include existential uniqueness ("there exists a
+     unique ` x ` such that ` ph ` "). $)
+  weu $a wff E! x ph $.
+
+  $( Extend wff definition to include uniqueness ("there exists at most one
+     ` x ` such that ` ph ` "). $)
+  wmo $a wff E* x ph $.
+
+  ${
+    $d w x y $.  $d x z $.  $d y ph $.  $d w z ph $.
+    $( A soundness justification theorem for ~ df-eu , showing that the
+       definition is equivalent to itself with its dummy variable renamed.
+       Note that ` y ` and ` z ` needn't be distinct variables.  See
+       ~ eujustALT for a proof that provides an example of how it can be
+       achieved through the use of ~ dvelim .  (Contributed by NM,
+       11-Mar-2010.)  (Proof shortened by Andrew Salmon, 9-Jul-2011.) $)
+    eujust $p |- ( E. y A. x ( ph <-> x = y )
+        <-> E. z A. x ( ph <-> x = z ) ) $=
+      ( vw weq wb wal wex equequ2 bibi2d albidv cbvexv bitri ) ABCFZGZBHZCIABEF
+      ZGZBHZEIABDFZGZBHZDIQTCECEFZPSBUDORACEBJKLMTUCEDEDFZSUBBUERUAAEDBJKLMN $.
+
+    $( Alternate proof of ~ eujust illustrating the use of ~ dvelim .
+       (Contributed by NM, 11-Mar-2010.)  (Proof modification is discouraged.)
+       (New usage is discouraged.) $)
+    eujustALT $p |- ( E. y A. x ( ph <-> x = y )
+        <-> E. z A. x ( ph <-> x = z ) ) $=
+      ( vw weq wal wb wex equequ2 bibi2d albidv sps wn hbnae ax-5 notbid dvelim
+      wi df-ex drex1 alrimih naecoms a1i cbv2h syl 3bitr4g pm2.61i ) CDFZCGZABC
+      FZHZBGZCIZABDFZHZBGZDIZHUMUQCDUIUMUQHCUIULUPBUIUKUOACDBJKLZMUAUJNZUMNZCGZ
+      NUQNZDGZNUNURUTVBVDUTUTDGZCGVBVDHUTVECCDCOCDDOUBUTVAVCCDVAVADGSDCABEFZHZB
+      GZNZVADCEVIDPECFZVHUMVJVGULBVJVFUKAECBJKLQRUCVIVCCDEVICPEDFZVHUQVKVGUPBVK
+      VFUOAEDBJKLQRUIVAVCHSUTUIUMUQUSQUDUEUFQUMCTUQDTUGUH $.
+  $}
+
+  ${
+    $d x y $.  $d y ph $.
+    $( Define existential uniqueness, i.e.  "there exists exactly one ` x `
+       such that ` ph ` ."  Definition 10.1 of [BellMachover] p. 97; also
+       Definition *14.02 of [WhiteheadRussell] p. 175.  Other possible
+       definitions are given by ~ eu1 , ~ eu2 , ~ eu3v , and ~ eu5 (which in
+       some cases we show with a hypothesis ` ph -> A. y ph ` in place of a
+       distinct variable condition on ` y ` and ` ph ` ).  Double uniqueness is
+       tricky: ` E! x E! y ph ` does not mean "exactly one ` x ` and one
+       ` y ` " (see ~ 2eu4 ).  (Contributed by NM, 12-Aug-1993.) $)
+    df-eu $a |- ( E! x ph <-> E. y A. x ( ph <-> x = y ) ) $.
+  $}
+
+  $( Define "there exists at most one ` x ` such that ` ph ` ."  Here we define
+     it in terms of existential uniqueness.  Notation of [BellMachover] p. 460,
+     whose definition we show as ~ mo3 .  For other possible definitions see
+     ~ mo2 and ~ mo4 .  (Contributed by NM, 8-Mar-1995.) $)
+  df-mo $a |- ( E* x ph <-> ( E. x ph -> E! x ph ) ) $.
