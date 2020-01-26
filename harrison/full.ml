@@ -1,34 +1,49 @@
 (*
-I think this exercise might be worht doing, but ugh this ocaml is gross. Write in Haskell?
+I think this exercise might be worth doing, but ugh this ocaml is gross. Write in Haskell?
 *)
+
+type term = Var of string
+          | Fn of string * term list;;
+type fol = R of string * term list;;
+
+type ('a)formula = False
+                 | True
+                 | Atom of 'a
+                 | Not of ('a)formula
+                 | And of ('a)formula * ('a)formula
+                 | Or of ('a)formula * ('a)formula
+                 | Imp of ('a)formula * ('a)formula
+                 | Iff of ('a)formula * ('a)formula
+                 | Forall of string * ('a)formula
+                 | Exists of string * ('a)formula;;
 
 (*
 So this is just the typing, not the inference rules.
 *)
 
 module type Proofsystem =
-   sig type thm
-   val modusponens : thm -> thm -> thm
-   val gen : string -> thm -> thm
-   val axiom_addimp : fol formula -> fol formula -> thm
-   val axiom_distribimp : fol formula -> fol formula -> fol formula -> thm
-   val axiom_doubleneg : fol formula -> thm
-   val axiom_allimp : string -> fol formula -> fol formula -> thm
-   val axiom_impall : string -> fol formula -> thm
-   val axiom_existseq : string -> term -> thm
-   val axiom_eqrefl : term -> thm
-   val axiom_funcong : string -> term list -> term list -> thm
-   val axiom_predcong : string -> term list -> term list -> thm
-   val axiom_iffimp1 : fol formula -> fol formula -> thm
-   val axiom_iffimp2 : fol formula -> fol formula -> thm
-   val axiom_impiff : fol formula -> fol formula -> thm
-   val axiom_true : thm
-   val axiom_not : fol formula -> thm
-   val axiom_and : fol formula -> fol formula -> thm
-   val axiom_or : fol formula -> fol formula -> thm
-   val axiom_exists : string -> fol formula -> thm
-   val concl : thm -> fol formula
-   end;;
+  sig type thm
+    val modusponens : thm -> thm -> thm
+    val gen : string -> thm -> thm
+    val axiom_addimp : fol formula -> fol formula -> thm
+    val axiom_distribimp : fol formula -> fol formula -> fol formula -> thm
+    val axiom_doubleneg : fol formula -> thm
+    val axiom_allimp : string -> fol formula -> fol formula -> thm
+    val axiom_impall : string -> fol formula -> thm
+    val axiom_existseq : string -> term -> thm
+    val axiom_eqrefl : term -> thm
+    val axiom_funcong : string -> term list -> term list -> thm
+    val axiom_predcong : string -> term list -> term list -> thm
+    val axiom_iffimp1 : fol formula -> fol formula -> thm
+    val axiom_iffimp2 : fol formula -> fol formula -> thm
+    val axiom_impiff : fol formula -> fol formula -> thm
+    val axiom_true : thm
+    val axiom_not : fol formula -> thm
+    val axiom_and : fol formula -> fol formula -> thm
+    val axiom_or : fol formula -> fol formula -> thm
+    val axiom_exists : string -> fol formula -> thm
+    val concl : thm -> fol formula
+  end;;
 
 (*
   Hmm, I don't exactly understand this. Need to learn ocaml syntax, this is like a class for the type?
