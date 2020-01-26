@@ -1,5 +1,13 @@
 (*
+
 I think this exercise might be worth doing, but ugh this ocaml is gross. Write in Haskell?
+
+Question: Why doesn't programming have axioms like this?
+
+metamath set.mm begins with an implementation of this in an even more minimal language
+
+And I think all this is just for first order logic. Can metamath do more?
+
 *)
 
 type term = Var of string
@@ -66,6 +74,7 @@ let rec free_in t fm =
 
 (*
   Hmm, I don't exactly understand this. Need to learn ocaml syntax, this is like a class for the type?
+  Seems like it.
 *)
 
 module Proven : Proofsystem =
