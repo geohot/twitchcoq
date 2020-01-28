@@ -36,7 +36,7 @@ def gen(x,b=3):
   return ret
 
 if __name__ == "__main__":
-  b = 2
+  b = 3
   all_s = 0
   all_sigma = 0
   for m in range(((b+1)*2*2)**(b*2)):

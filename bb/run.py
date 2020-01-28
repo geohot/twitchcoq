@@ -33,9 +33,9 @@ def run(t0, ms=-1):
       pos -= 1
     else:
       pos += 1
+    cnt += 1
     if s == "H":
       break
-    cnt += 1
     if ms != -1 and cnt > ms:
       halt = False
       break
