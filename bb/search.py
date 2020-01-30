@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-MS = 2
+MS = 4
 
 mss = -1
 mst = -1
@@ -15,10 +15,12 @@ def run(M, s, t, h, steps):
       #print("missing", s)
       for w in [0, 1]:
         for d in ['l', 'r']:
-          nsp = [k[0] for k in M]
+          nsp = sorted(list(set([k[0] for k in M])))
           if len(nsp) < MS:
+            # not at the limit, add one more state
             nsp.append(chr(ord('a')+len(nsp)))
           else:
+            # seen all states, now we can halt
             nsp.append('H')
           for ns in nsp:
             # copy M and t here, and kick off all the new machines
@@ -49,10 +51,10 @@ def run(M, s, t, h, steps):
     
 
 
-t = [0]*1000
+t = [0]*2000
 M = {}
 M[('a', 0)] = (1, 'r', 'b')
-run(M, ('a', 0), t, 500, 0)
+run(M, ('a', 0), t, 1000, 0)
 print(mss, mst)
 
 
