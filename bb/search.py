@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 MS = 4
+MAXS = 120
 
 mss = -1
 mst = -1
@@ -8,25 +9,28 @@ mst = -1
 def run(M, s, t, h, steps):
   global mss, mst
   # step count or head escape to end
-  while steps < 200 and h > 1 and h < len(t)-1:
+  while steps < MAXS and h > 1 and h < len(t)-1:
 
     # state adder, kick off with recursion
     if s not in M:
+      # jump to all current states possible
+      nsp = sorted(list(set([k[0] for k in M])))
+      if len(nsp) < MS:
+        # not at the limit, add one more state
+        nsp.append(chr(ord('a')+len(nsp)))
+      else:
+        # seen all states, now we can halt
+        nsp.append('H')
       #print("missing", s)
       for w in [0, 1]:
         for d in ['l', 'r']:
-          nsp = sorted(list(set([k[0] for k in M])))
-          if len(nsp) < MS:
-            # not at the limit, add one more state
-            nsp.append(chr(ord('a')+len(nsp)))
-          else:
-            # seen all states, now we can halt
-            nsp.append('H')
           for ns in nsp:
             # copy M and t here, and kick off all the new machines
             Mp = M.copy()
             Mp[s] = (w,d,ns)
             run(Mp, s, t[:], h, steps)
+
+      # this machine was incomplete, don't keep running
       return
 
     # s in M
@@ -51,10 +55,10 @@ def run(M, s, t, h, steps):
     
 
 
-t = [0]*2000
+t = [0]*(MAXS*2)
 M = {}
 M[('a', 0)] = (1, 'r', 'b')
-run(M, ('a', 0), t, 1000, 0)
+run(M, ('a', 0), t, MAXS, 0)
 print(mss, mst)
 
 
