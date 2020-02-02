@@ -3,6 +3,8 @@
 MS = 4
 MAXS = 120
 
+hcount = -1
+mcount = -1
 mss = -1
 mst = -1
 
@@ -14,10 +16,9 @@ def mprint(m):
   return ' '.join(s)
   
 def run(M, s, t, h, steps):
-  global mss, mst
+  global mss, mst, mcount, hcount
   # step count or head escape to end
   while steps < MAXS and h > 1 and h < len(t)-1:
-
     # state adder, kick off with recursion
     if s not in M:
       # jump to all current states possible
@@ -39,6 +40,7 @@ def run(M, s, t, h, steps):
             run(Mp, s, t[:], h, steps)
 
       # this machine was incomplete, don't keep running
+      # also doesn't count toward machines
       return
 
     # s in M
@@ -59,15 +61,16 @@ def run(M, s, t, h, steps):
       mss = max(steps, mss)
       mst = max(sum(t), mst)
       print("halt", steps, sum(t), mss, mst) #, mprint(M))
+      hcount += 1
       break
+  mcount += 1
     
-
 
 t = [0]*(MAXS*2)
 M = {}
 M[('a', 0)] = (1, 'r', 'b')
 run(M, ('a', 0), t, MAXS, 0)
-print(mss, mst)
+print(mss, mst, hcount, mcount)
 
 
 
