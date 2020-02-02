@@ -20,18 +20,14 @@ def run(M, s, t, h, steps):
 
     # state adder, kick off with recursion
     if s not in M:
-      # this fixes 4
-      nsp = [chr(ord('a')+i) for i in range(MS)] + ['H']
-      """
       # jump to all current states possible
-      nsp = sorted(list(set([k[0] for k in M])))
+      nsp = sorted(list(set([k[0] for k in M]+[s[0]])))
       if len(nsp) < MS:
         # not at the limit, add one more state
         nsp.append(chr(ord('a')+len(nsp)))
       else:
         # seen all, now we can halt
         nsp.append('H')
-      """
       #print("missing", s)
       for w in [0, 1]:
         for d in ['l', 'r']:
