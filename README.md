@@ -67,6 +67,6 @@ Lossy compression has no meaning, though there is something aside from lossless 
 
 I think "Value Prediction Networks" (https://arxiv.org/abs/1707.03497) gets this right, would be fun to implement that. Correct to say you are just compressing to predict the reward?
 
-Then there's the universal goal function of compression progress (https://arxiv.org/abs/0812.4360) as a way of seperating noise (which will never be compressed), from signal (which will have a gradient of compression).
+Then there's the universal goal function of compression progress (https://arxiv.org/abs/0812.4360) as a way of separating noise (which will never be compressed), from signal (which will have a gradient of compression).
 
 
