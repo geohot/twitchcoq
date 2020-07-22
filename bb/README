@@ -1,6 +1,12 @@
 Attack Steps
 
+0. Naive
+  5+1 states, 2 values, 2 moves ^ 10 labels 
+  24^10 = 63 trillion, possible for sigma(5, 2)
+
 1. Determine a canonical numbering of all the machines that's easy to enumerate and refer to the machines by. Should be simple, yet remove many isomorphic machines.
+  bbprover claims 150M machines
+  zany zoo claims 102,550,546
 (put number here)
 
 2. Exclude all machines that halt with <= 4098 (current ones record)

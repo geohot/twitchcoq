@@ -787,8 +787,8 @@ summary_name(convert(_,_), "convert").
 
 compress_length(10). % Was 5, but then found long(4,1,M) and then example(3,M). 
 
-beaver(input,  "C:/busybeaver/Data/Raw/"). % Directory for input
-beaver(output, "C:/busybeaver/Data/Results/"). % Directory where results get written. 
+beaver(input,  "/Users/power/fun/twitchcoq/bb/harland/raw/"). % Directory for input
+beaver(output, "/Users/power/fun/twitchcoq/bb/harland/results/"). % Directory where results get written. 
 
 which_dir(Mode,States,Symbols,Dirs,Style,Type,Directory) :- member(Mode,[refine,status]), directory(output,States,Symbols,Dirs,Style,Type,Directory).
 which_dir(Mode,States,Symbols,Dirs,Style,Type,Directory) :- \+ member(Mode, [refine, status]), directory(input,States,Symbols,Dirs,Style,Type,Directory).
