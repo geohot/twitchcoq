@@ -11,6 +11,10 @@ Attack Steps
 (put number here)
 
 4. Now it's proving time
+  a. If they halt, no proof required, just the halting step.
+  b. If they repeat state, no proof required, just the repeating step and to which step it repeats.
+  c. The rest run for longer than the suspected BB number, and likely don't halt. But how to prove it.
+     I think it's all some form of induction.
 
 How can we put the machines in a proof assistant?
 
