@@ -130,20 +130,21 @@ void generate() {
   mm.tf[S('b')][0] = transition(0, D('l'), S('b')); ms.push(mm);
   mm.tf[S('b')][0] = transition(1, D('l'), S('b')); ms.push(mm);
 
-  mm.tf[S('b')][0] = transition(0, D('l'), S('c')); ms.push(mm);
-  mm.tf[S('b')][0] = transition(1, D('l'), S('c')); ms.push(mm);
+  if (N >= 3) {
+    mm.tf[S('b')][0] = transition(0, D('l'), S('c')); ms.push(mm);
+    mm.tf[S('b')][0] = transition(1, D('l'), S('c')); ms.push(mm);
 
-  mm.tf[S('b')][0] = transition(0, D('r'), S('c')); ms.push(mm);
-  mm.tf[S('b')][0] = transition(1, D('r'), S('c')); ms.push(mm);
+    mm.tf[S('b')][0] = transition(0, D('r'), S('c')); ms.push(mm);
+    mm.tf[S('b')][0] = transition(1, D('r'), S('c')); ms.push(mm);
+  }
   printf("step 2\n");
 
   /*printf("%lu\n", ms.size());
   while (ms.size() > 0) {
-    m = ms.top();
+    mm = ms.top();
     ms.pop();
-    printf("%d\n", m.tf[S('b')][0].output);
+    printf("%d\n", mm.tf[S('b')][0].output);
   }
-
   exit(0);*/
 
   int bb_n = 0;
@@ -157,6 +158,8 @@ void generate() {
     printf("%d -- %lu %lu -- %d: %d %d=%d x %d %d %d\n", bb_n, halting.size(), ms.size(),
       mm.steps, mm.cs, mm.cp, mm.t[mm.cp],
       ttf.output, ttf.direction, ttf.new_state);
+
+    // about to go to an undefined place!
     if (ttf.new_state == STATE_UNDEFINED) {
       if (mm.is_full()) {
         // TODO: check "0-dextrous" from definition 23
@@ -176,6 +179,8 @@ void generate() {
             }
           }
         }
+        // no machine to run right now
+        continue;
       }
       //printf("UNDEFINED STATE!\n");
     }
@@ -187,14 +192,25 @@ void generate() {
     if (mm.run()) {
       ms.push(mm);
     } else {
-      halting.push_back(mm);
       bb_n = std::max(mm.steps, bb_n);
+      halting.push_back(mm);
     }
   }
 }
 
 
 int main() {
+  // proof the tape is copied
+  /*machine mm;
+  mm.tf[S('a')][0] = transition(1, D('r'), S('b'));
+  machine mm2 = mm;
+
+  printf("%d %d\n", mm.steps, mm.t[0]);
+  printf("%d %d\n", mm2.steps, mm2.t[0]);
+  mm.run();
+  printf("%d %d\n", mm.steps, mm.t[0]);
+  printf("%d %d\n", mm2.steps, mm2.t[0]);*/
+
   generate();
 }
 
