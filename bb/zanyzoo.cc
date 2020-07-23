@@ -58,6 +58,9 @@ public:
     cs = S('a');
     cp = 0;
     steps = 0;
+    // seen 'a' and 0
+    state_seen[cs] = 1;
+    symbol_seen[0] = 1;
   }
 
   /*machine& operator =(const machine& m) {
@@ -78,28 +81,28 @@ public:
     return steps > m.steps;
   }
 
+  int card() {
+    int ret = 0;
+    for (int n = 0; n < N; n++) { 
+      for (int m = 0; m < M; m++) { 
+        ret += (tf[n][m].new_state != STATE_UNDEFINED);
+      }
+    }
+    return ret;
+  }
+
   bool run() {
     steps++;
     transition &ttf = tf[cs][t[cp]];
     t[cp] = ttf.output;
     cp += ttf.direction;
     cs = ttf.new_state;
+    if (cs >= 0) state_seen[cs] = 1;
+    if (ttf.output >= 0) symbol_seen[ttf.output] = 1;
     return cs != STATE_HALT;
   }
 
   bool is_full() {
-    int state_seen[N] = {0};
-    int symbol_seen[M] = {0};
-    for (int n = 0; n < N; n++) {
-      for (int m = 0; m < M; m++) {
-        if (tf[n][m].new_state >= 0) {
-          state_seen[tf[n][m].new_state] = 1;
-        }
-        if (tf[n][m].output >= 0) {
-          symbol_seen[tf[n][m].output] = 1;
-        }
-      }
-    }
     int states_seen = 0;
     int symbols_seen = 0;
     for (int n = 0; n < N; n++) { states_seen += state_seen[n]; }
@@ -112,6 +115,9 @@ public:
   int cp;
   transition tf[N][M];
   int steps;
+
+  int state_seen[N];
+  int symbol_seen[M];
 };
 
 void generate() {
@@ -159,16 +165,31 @@ void generate() {
       mm.steps, mm.cs, mm.cp, mm.t[mm.cp],
       ttf.output, ttf.direction, ttf.new_state);
 
+    // step 4: 9 steps? halt with the 10th
+    //printf("%d\n", mm.card());
+    if (mm.card() == N*M-1) {
+      // add halting to the missing state
+      for (int n = 0; n < N; n++) {
+        for (int m = 0; m < M; m++) {
+          if (mm.tf[n][m].new_state == STATE_UNDEFINED) {
+            mm.tf[n][m].output = 1;
+            mm.tf[n][m].direction = D('r');
+            mm.tf[n][m].new_state = STATE_HALT;
+          }
+        }
+      }
+    }
+
     // about to go to an undefined place!
     if (ttf.new_state == STATE_UNDEFINED) {
-      if (mm.is_full()) {
+      /*if (mm.is_full()) {
         // TODO: check "0-dextrous" from definition 23
         // add halt state and halt
         ttf.output = 1;
         ttf.direction = D('r');
         ttf.new_state = STATE_HALT;
         // will halt down below
-      } else {
+      } else {*/
         for (int n = 0; n < N; n++) {
           for (int m = 0; m < M; m++) {
             for (int d : {-1, 1}) {
@@ -181,19 +202,17 @@ void generate() {
         }
         // no machine to run right now
         continue;
-      }
+      //}
       //printf("UNDEFINED STATE!\n");
     }
-
-    // step 4: TODO, write me
 
     // run step, add back to queue if no halt
     // more run please
     if (mm.run()) {
       ms.push(mm);
     } else {
-      bb_n = std::max(mm.steps, bb_n);
       halting.push_back(mm);
+      bb_n = std::max(mm.steps, bb_n);
     }
   }
 }
