@@ -2,7 +2,7 @@
 #include <vector>
 #include <queue>
 
-#define N 5
+#define N 3
 #define M 2
 
 #define STATE_HALT -1
@@ -75,7 +75,7 @@ public:
   }*/
 
   bool operator <(const machine& m) const {
-    return steps < m.steps;
+    return steps > m.steps;
   }
 
   bool run() {
@@ -84,7 +84,7 @@ public:
     t[cp] = ttf.output;
     cp += ttf.direction;
     cs = ttf.new_state;
-    return cs == STATE_HALT;
+    return cs != STATE_HALT;
   }
 
   bool is_full() {
@@ -145,14 +145,17 @@ void generate() {
   }
 
   exit(0);*/
+
+  int bb_n = 0;
+  std::vector<machine> halting;
   
   // step 3
   while (ms.size() > 0) {
     mm = ms.top();
     ms.pop();
     transition &ttf = mm.tf[mm.cs][mm.t[mm.cp]];
-    printf("%lu -- %d: %d %d=%d x %d %d %d\n", ms.size(), mm.steps,
-      mm.cs, mm.cp, mm.t[mm.cp],
+    printf("%d -- %lu %lu -- %d: %d %d=%d x %d %d %d\n", bb_n, halting.size(), ms.size(),
+      mm.steps, mm.cs, mm.cp, mm.t[mm.cp],
       ttf.output, ttf.direction, ttf.new_state);
     if (ttf.new_state == STATE_UNDEFINED) {
       if (mm.is_full()) {
@@ -174,11 +177,19 @@ void generate() {
           }
         }
       }
-      printf("UNDEFINED STATE!\n");
+      //printf("UNDEFINED STATE!\n");
     }
 
-    // run step
-    if (mm.run()) break;
+    // step 4: TODO, write me
+
+    // run step, add back to queue if no halt
+    // more run please
+    if (mm.run()) {
+      ms.push(mm);
+    } else {
+      halting.push_back(mm);
+      bb_n = std::max(mm.steps, bb_n);
+    }
   }
 }
 
