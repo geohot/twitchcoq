@@ -2,7 +2,7 @@
 #include <vector>
 #include <queue>
 
-#define N 3
+#define N 4
 #define M 2
 
 #define STATE_HALT -1
@@ -102,6 +102,16 @@ public:
     return cs != STATE_HALT;
   }
 
+  bool is_zdex() {
+    bool ret=true;
+    for (int n = 0; n < N; n++) {
+      if (tf[n][0].new_state != STATE_UNDEFINED) {
+        if (tf[n][0].direction != 1) { ret=false; break; }
+      }
+    }
+    return ret;
+  }
+
   bool is_full() {
     int states_seen = 0;
     int symbols_seen = 0;
@@ -165,23 +175,10 @@ void generate() {
       mm.steps, mm.cs, mm.cp, mm.t[mm.cp],
       ttf.output, ttf.direction, ttf.new_state);
 
-    // step 4: 9 steps? halt with the 10th
-    //printf("%d\n", mm.card());
-    if (mm.card() == N*M-1) {
-      // add halting to the missing state
-      for (int n = 0; n < N; n++) {
-        for (int m = 0; m < M; m++) {
-          if (mm.tf[n][m].new_state == STATE_UNDEFINED) {
-            mm.tf[n][m].output = 1;
-            mm.tf[n][m].direction = D('r');
-            mm.tf[n][m].new_state = STATE_HALT;
-          }
-        }
-      }
-    }
-
-    // about to go to an undefined place!
+    // step 4: about to go to an undefined place!
     if (ttf.new_state == STATE_UNDEFINED) {
+      // add back in, may generate all correct machines, just not run them
+      // untested
       /*if (mm.is_full()) {
         // TODO: check "0-dextrous" from definition 23
         // add halt state and halt
@@ -196,7 +193,9 @@ void generate() {
               ttf.output = m;
               ttf.direction = d;
               ttf.new_state = n;
-              ms.push(mm);
+              if (!mm.is_zdex()) {
+                ms.push(mm);
+              }
             }
           }
         }
@@ -204,6 +203,21 @@ void generate() {
         continue;
       //}
       //printf("UNDEFINED STATE!\n");
+    }
+
+    // step 5: 9 steps? halt with the 10th
+    //printf("%d\n", mm.card());
+    if (mm.card() == N*M-1) {
+      // add halting to the missing state
+      for (int n = 0; n < N; n++) {
+        for (int m = 0; m < M; m++) {
+          if (mm.tf[n][m].new_state == STATE_UNDEFINED) {
+            mm.tf[n][m].output = 1;
+            mm.tf[n][m].direction = D('r');
+            mm.tf[n][m].new_state = STATE_HALT;
+          }
+        }
+      }
     }
 
     // run step, add back to queue if no halt
