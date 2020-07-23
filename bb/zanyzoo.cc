@@ -115,44 +115,47 @@ public:
 };
 
 void generate() {
-  machine m;
+  machine mm;
   std::priority_queue<machine> ms;
 
   printf("init\n");
   // step 1
-  m.tf[S('a')][0] = transition(1, D('r'), S('b'));
+  mm.tf[S('a')][0] = transition(1, D('r'), S('b'));
   printf("step 1\n");
 
   // step 2 (eight choices)
-  m.tf[S('b')][0] = transition(0, D('l'), S('a')); ms.push(m);
-  m.tf[S('b')][0] = transition(1, D('l'), S('a')); ms.push(m);
+  mm.tf[S('b')][0] = transition(0, D('l'), S('a')); ms.push(mm);
+  mm.tf[S('b')][0] = transition(1, D('l'), S('a')); ms.push(mm);
 
-  m.tf[S('b')][0] = transition(0, D('l'), S('b')); ms.push(m);
-  m.tf[S('b')][0] = transition(1, D('l'), S('b')); ms.push(m);
+  mm.tf[S('b')][0] = transition(0, D('l'), S('b')); ms.push(mm);
+  mm.tf[S('b')][0] = transition(1, D('l'), S('b')); ms.push(mm);
 
-  m.tf[S('b')][0] = transition(0, D('l'), S('c')); ms.push(m);
-  m.tf[S('b')][0] = transition(1, D('l'), S('c')); ms.push(m);
+  mm.tf[S('b')][0] = transition(0, D('l'), S('c')); ms.push(mm);
+  mm.tf[S('b')][0] = transition(1, D('l'), S('c')); ms.push(mm);
 
-  m.tf[S('b')][0] = transition(0, D('r'), S('c')); ms.push(m);
-  m.tf[S('b')][0] = transition(1, D('r'), S('c')); ms.push(m);
+  mm.tf[S('b')][0] = transition(0, D('r'), S('c')); ms.push(mm);
+  mm.tf[S('b')][0] = transition(1, D('r'), S('c')); ms.push(mm);
   printf("step 2\n");
 
-  printf("%lu\n", ms.size());
+  /*printf("%lu\n", ms.size());
   while (ms.size() > 0) {
     m = ms.top();
     ms.pop();
     printf("%d\n", m.tf[S('b')][0].output);
   }
 
-  exit(0);
+  exit(0);*/
   
   // step 3
-  while (1) {
-    m = ms.top();
-    transition &ttf = m.tf[m.cs][m.t[m.cp]];
-    printf("%d %d=%d x %d %d %d\n", m.cs, m.cp, m.t[m.cp], ttf.output, ttf.direction, ttf.new_state);
+  while (ms.size() > 0) {
+    mm = ms.top();
+    ms.pop();
+    transition &ttf = mm.tf[mm.cs][mm.t[mm.cp]];
+    printf("%lu -- %d: %d %d=%d x %d %d %d\n", ms.size(), mm.steps,
+      mm.cs, mm.cp, mm.t[mm.cp],
+      ttf.output, ttf.direction, ttf.new_state);
     if (ttf.new_state == STATE_UNDEFINED) {
-      if (m.is_full()) {
+      if (mm.is_full()) {
         // TODO: check "0-dextrous" from definition 23
         // add halt state and halt
         ttf.output = 1;
@@ -166,7 +169,7 @@ void generate() {
               ttf.output = m;
               ttf.direction = d;
               ttf.new_state = n;
-              // spawn
+              ms.push(mm);
             }
           }
         }
@@ -175,7 +178,7 @@ void generate() {
     }
 
     // run step
-    if (m.run()) break;
+    if (mm.run()) break;
   }
 }
 
