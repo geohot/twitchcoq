@@ -1,15 +1,23 @@
 // (State, Input, Output, Direction, NewState)
 #include <vector>
 #include <queue>
-using namespace std;
+#include <mutex>
+#include <thread>
+using std::vector;
+using std::min;
+using std::max;
+using std::mutex;
+using std::thread;
+using std::priority_queue;
 
 // total 2x2 -- 3*2*2*4 = 48
 
 // for 2x3, we expect 2764
 // for 3x2, we expect 3508 (228 for the first)
+// for 4x2, we expect 511145
 
-#define N 2
-#define M 3
+#define N 4
+#define M 2
 
 #define STATE_HALT -1
 #define STATE_UNDEFINED -2
@@ -140,14 +148,16 @@ public:
   int steps;
 };
 
-void generate() {
-  machine mm;
-  priority_queue<machine> ms;
+// thread safe?
+priority_queue<machine> ms;
+vector<machine> out;
+mutex mut;
 
-  printf("init\n");
+void init() {
+  machine mm;
+
   // step 1
   mm.add_tf(S('a'), 0, 1, D('r'), S('b'));
-  printf("step 1\n");
 
   // step 2 (eight choices)
   for (int m = 0; m < min(mm.num_symbols+1, M); m++) {
@@ -161,43 +171,52 @@ void generate() {
       mm.add_tf(S('b'), 0, m, D('r'), S('c')); ms.push(mm);
     }
   }
-  printf("step 2\n");
+}
 
-  /*printf("%lu\n", ms.size());
-  while (ms.size() > 0) {
-    mm = ms.top();
-    ms.pop();
-    printf("%d\n", mm.tf[S('b')][0].output);
-  }
-  exit(0);*/
+void add_queue(machine &mm) {
+  mut.lock();
+  ms.push(mm);
+  mut.unlock();
+}
 
-  int bb_n = 0;
+void add_out(machine &mm) {
+  mut.lock();
+  out.push_back(mm);
+  mut.unlock();
+}
 
-  vector<machine> out;
-  
+void generate() {
+  machine mm;
+
   // step 3
-  while (ms.size() > 0) {
+  while (true) {
+    mut.lock();
+    if (ms.size() == 0) {
+      mut.unlock();
+      break;
+    }
     mm = ms.top();
     ms.pop();
+    mut.unlock();
 
-    // failed blank tape
+    // failed blank tape, do not store
     if (mm.steps > 0 && mm.t.is_blank()) {
       //out.push_back(mm);
       continue;
     } 
 
     // bound on number of exec steps exceeded
-    if (mm.steps > 40) {
-      out.push_back(mm);
+    if (mm.steps > 30) {
+      add_out(mm);
       continue;
     }
 
     transition &ttf = mm.tf[mm.cs][mm.t[mm.cp]];
-    printf("%d %lu -- %lu %lu -- %d: %d %d=%d x out:%d dir:%d ns:%d\n",
-      bb_n, 1+out.size()+ms.size(),
+    /*printf("%lu -- %lu %lu -- %d: %d %d=%d x out:%d dir:%d ns:%d\n",
+      1+out.size()+ms.size(),
       out.size(), ms.size(),
       mm.steps, mm.cs, mm.cp, mm.t[mm.cp],
-      ttf.output, ttf.direction, ttf.new_state);
+      ttf.output, ttf.direction, ttf.new_state);*/
 
     // step 4: about to go to an undefined place!
     if (ttf.new_state == STATE_UNDEFINED) {
@@ -206,15 +225,15 @@ void generate() {
         // TODO: check "0-dextrous" from definition 23
         // add halt state and halt
         mm.add_tf(mm.cs, mm.t[mm.cp], 1, D('r'), STATE_HALT);
-        // this is known to terminate, just let it run
-        ms.push(mm);
+        // this will terminate this step, just let it run
+        add_queue(mm);
       } 
       // add the other states
       for (int n = 0; n < min(mm.num_states+1, N); n++) {
         for (int m = 0; m < min(mm.num_symbols+1, M); m++) {
           for (int d : {-1, 1}) {
             mm.add_tf(mm.cs, mm.t[mm.cp], m, d, n);
-            ms.push(mm);
+            add_queue(mm);
           }
         }
       }
@@ -229,9 +248,11 @@ void generate() {
         for (int m = 0; m < M; m++) {
           if (mm.tf[n][m].new_state == STATE_UNDEFINED) {
             mm.add_tf(n, m, 1, D('r'), STATE_HALT);
-            // this is unknown if it halts
-            //out.push_back(mm);
-            ms.push(mm);
+            // this is unknown if it halts, but it's complete
+            add_out(mm);
+
+            // don't return to main queue
+            //add_queue(mm);
           }
         }
       }
@@ -239,36 +260,31 @@ void generate() {
     }
 
     // run step, add back to queue if no halt
-    // more run please
     if (mm.run()) {
-      ms.push(mm);
+      // more run please
+      add_queue(mm);
     } else {
-      bb_n = max(bb_n, mm.steps);
-      out.push_back(mm);
+      // halted
+      add_out(mm);
     }
   }
+}
 
-  printf("got bb number %d\n", bb_n);
+int main() {
+  init();
+  
+  vector<thread*> tt;
+  for (int i = 0; i < 1; i++) {
+    tt.push_back(new thread(generate));
+  }
+  for (auto t : tt) {
+    t->join();
+  }
+
   printf("looking at %lu machines\n", out.size());
   /*for (auto mm : out) {
     mm.print();
   }*/
-}
-
-
-int main() {
-  // proof the tape is copied
-  /*machine mm;
-  mm.tf[S('a')][0] = transition(1, D('r'), S('b'));
-  machine mm2 = mm;
-
-  printf("%d %d\n", mm.steps, mm.t[0]);
-  printf("%d %d\n", mm2.steps, mm2.t[0]);
-  mm.run();
-  printf("%d %d\n", mm.steps, mm.t[0]);
-  printf("%d %d\n", mm2.steps, mm2.t[0]);*/
-
-  generate();
 }
 
 
