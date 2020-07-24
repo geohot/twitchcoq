@@ -6,7 +6,7 @@ using namespace std;
 // total 2x2 -- 3*2*2*4 = 48
 
 // for 2x3, we expect 2764
-// for 3x2, we expect 3508
+// for 3x2, we expect 3508 (228 for the first)
 
 #define N 2
 #define M 3
@@ -91,6 +91,7 @@ public:
   }
 
   void print() {
+    printf("%4d: ", steps);
     for (int n = 0; n < N; n++) { 
       for (int m = 0; m < M; m++) { 
         if (tf[n][m].new_state == STATE_UNDEFINED) {
@@ -118,7 +119,7 @@ public:
     return cs != STATE_HALT;
   }
 
-  bool is_zdex() {
+  /*bool is_zdex() {
     bool ret = true;
     for (int n = 0; n < N; n++) {
       if (tf[n][0].new_state != STATE_UNDEFINED) {
@@ -126,7 +127,7 @@ public:
       }
     }
     return ret;
-  }
+  }*/
 
   int num_states;
   int num_symbols;
@@ -149,18 +150,16 @@ void generate() {
   printf("step 1\n");
 
   // step 2 (eight choices)
-  mm.add_tf(S('b'), 0, 0, D('l'), S('a')); ms.push(mm);
-  mm.add_tf(S('b'), 0, 1, D('l'), S('a')); ms.push(mm);
-
-  mm.add_tf(S('b'), 0, 0, D('l'), S('b')); ms.push(mm);
-  mm.add_tf(S('b'), 0, 1, D('l'), S('b')); ms.push(mm);
+  for (int m = 0; m < min(mm.num_symbols+1, M); m++) {
+    mm.add_tf(S('b'), 0, m, D('l'), S('a')); ms.push(mm);
+    mm.add_tf(S('b'), 0, m, D('l'), S('b')); ms.push(mm);
+  }
 
   if (N >= 3) {
-    mm.add_tf(S('b'), 0, 0, D('l'), S('c')); ms.push(mm);
-    mm.add_tf(S('b'), 0, 1, D('l'), S('c')); ms.push(mm);
-
-    mm.add_tf(S('b'), 0, 0, D('r'), S('c')); ms.push(mm);
-    mm.add_tf(S('b'), 0, 1, D('r'), S('c')); ms.push(mm);
+    for (int m = 0; m < min(mm.num_symbols+1, M); m++) {
+      mm.add_tf(S('b'), 0, m, D('l'), S('c')); ms.push(mm);
+      mm.add_tf(S('b'), 0, m, D('r'), S('c')); ms.push(mm);
+    }
   }
   printf("step 2\n");
 
@@ -173,7 +172,8 @@ void generate() {
   exit(0);*/
 
   int bb_n = 0;
-  vector<machine> halting;
+
+  vector<machine> out;
   
   // step 3
   while (ms.size() > 0) {
@@ -181,12 +181,21 @@ void generate() {
     ms.pop();
 
     // failed blank tape
-    if (mm.steps > 0 && mm.t.is_blank()) continue;
+    if (mm.steps > 0 && mm.t.is_blank()) {
+      //out.push_back(mm);
+      continue;
+    } 
+
+    // bound on number of exec steps exceeded
+    if (mm.steps > 40) {
+      out.push_back(mm);
+      continue;
+    }
 
     transition &ttf = mm.tf[mm.cs][mm.t[mm.cp]];
-    printf("%d %lu -- %lu %lu -- %d: %d %d=%d x out:%d dir:%d ns:%d\n", bb_n,
-      1+halting.size()+ms.size(),
-      halting.size(), ms.size(),
+    printf("%d %lu -- %lu %lu -- %d: %d %d=%d x out:%d dir:%d ns:%d\n",
+      bb_n, 1+out.size()+ms.size(),
+      out.size(), ms.size(),
       mm.steps, mm.cs, mm.cp, mm.t[mm.cp],
       ttf.output, ttf.direction, ttf.new_state);
 
@@ -197,18 +206,15 @@ void generate() {
         // TODO: check "0-dextrous" from definition 23
         // add halt state and halt
         mm.add_tf(mm.cs, mm.t[mm.cp], 1, D('r'), STATE_HALT);
-        if (!mm.is_zdex() && mm.steps > N) {
-          halting.push_back(mm);
-        }
+        // this is known to terminate, just let it run
+        ms.push(mm);
       } 
       // add the other states
-      for (int n = 0; n < N; n++) {
-        for (int m = 0; m < M; m++) {
+      for (int n = 0; n < min(mm.num_states+1, N); n++) {
+        for (int m = 0; m < min(mm.num_symbols+1, M); m++) {
           for (int d : {-1, 1}) {
             mm.add_tf(mm.cs, mm.t[mm.cp], m, d, n);
-            if (!mm.is_zdex()) {
-              ms.push(mm);
-            }
+            ms.push(mm);
           }
         }
       }
@@ -219,11 +225,13 @@ void generate() {
     //printf("%d\n", mm.card());
     if (mm.card == N*M-1) {
       // add halting to the missing state
-      for (int n = 0; n < min(mm.num_states+1, N); n++) {
-        for (int m = 0; m < min(mm.num_symbols+1, M); m++) {
+      for (int n = 0; n < N; n++) {
+        for (int m = 0; m < M; m++) {
           if (mm.tf[n][m].new_state == STATE_UNDEFINED) {
             mm.add_tf(n, m, 1, D('r'), STATE_HALT);
-            halting.push_back(mm);
+            // this is unknown if it halts
+            //out.push_back(mm);
+            ms.push(mm);
           }
         }
       }
@@ -235,19 +243,16 @@ void generate() {
     if (mm.run()) {
       ms.push(mm);
     } else {
-      if (mm.steps > N) {
-        halting.push_back(mm);
-        bb_n = max(mm.steps, bb_n);
-      }
+      bb_n = max(bb_n, mm.steps);
+      out.push_back(mm);
     }
   }
 
-
-  printf("looking at %lu machines\n", halting.size());
-  for (auto h : halting) {
-    h.print();
-  }
-
+  printf("got bb number %d\n", bb_n);
+  printf("looking at %lu machines\n", out.size());
+  /*for (auto mm : out) {
+    mm.print();
+  }*/
 }
 
 
