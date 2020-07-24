@@ -1,11 +1,15 @@
 // (State, Input, Output, Direction, NewState)
 #include <vector>
 #include <queue>
+using namespace std;
 
 // total 2x2 -- 3*2*2*4 = 48
 
+// for 2x3, we expect 2764
+// for 3x2, we expect 3508
+
 #define N 2
-#define M 2
+#define M 3
 
 #define STATE_HALT -1
 #define STATE_UNDEFINED -2
@@ -46,9 +50,15 @@ public:
     }
   }
 
+  bool is_blank() {
+    for (auto s : fwd) { if (s != 0) return false; }
+    for (auto s : bwd) { if (s != 0) return false; }
+    return true;
+  }
+
   // these are copied when we copy the tape
-  std::vector<int> fwd;
-  std::vector<int> bwd;
+  vector<int> fwd;
+  vector<int> bwd;
 };
 
 class machine {
@@ -57,15 +67,18 @@ public:
     cs = S('a');
     cp = 0;
     steps = 0;
+    card = 0;
     num_states = 0;
     num_symbols = 0;
   }
 
   void add_tf(int n, int m, int output, int direction, int new_state) {
-    num_states = std::max(num_states, n+1);
-    num_symbols = std::max(num_symbols, m+1);
-    num_states = std::max(num_states, new_state+1);
-    num_symbols = std::max(num_symbols, output+1);
+    num_states = max(num_states, n+1);
+    num_symbols = max(num_symbols, m+1);
+    num_states = max(num_states, new_state+1);
+    num_symbols = max(num_symbols, output+1);
+    assert(new_state != STATE_UNDEFINED);
+    card += (tf[n][m].new_state == STATE_UNDEFINED);
 
     tf[n][m].output = output;
     tf[n][m].direction = direction;
@@ -96,16 +109,6 @@ public:
     return steps > m.steps;
   }
 
-  int card() {
-    int ret = 0;
-    for (int n = 0; n < N; n++) { 
-      for (int m = 0; m < M; m++) { 
-        ret += (tf[n][m].new_state != STATE_UNDEFINED);
-      }
-    }
-    return ret;
-  }
-
   bool run() {
     steps++;
     transition &ttf = tf[cs][t[cp]];
@@ -116,7 +119,7 @@ public:
   }
 
   bool is_zdex() {
-    bool ret=true;
+    bool ret = true;
     for (int n = 0; n < N; n++) {
       if (tf[n][0].new_state != STATE_UNDEFINED) {
         if (tf[n][0].direction != 1) { ret=false; break; }
@@ -127,6 +130,7 @@ public:
 
   int num_states;
   int num_symbols;
+  int card;
 
   tape t;
   int cs;
@@ -137,7 +141,7 @@ public:
 
 void generate() {
   machine mm;
-  std::priority_queue<machine> ms;
+  priority_queue<machine> ms;
 
   printf("init\n");
   // step 1
@@ -169,12 +173,15 @@ void generate() {
   exit(0);*/
 
   int bb_n = 0;
-  std::vector<machine> halting;
+  vector<machine> halting;
   
   // step 3
   while (ms.size() > 0) {
     mm = ms.top();
     ms.pop();
+
+    // failed blank tape
+    if (mm.steps > 0 && mm.t.is_blank()) continue;
 
     transition &ttf = mm.tf[mm.cs][mm.t[mm.cp]];
     printf("%d %lu -- %lu %lu -- %d: %d %d=%d x out:%d dir:%d ns:%d\n", bb_n,
@@ -190,7 +197,7 @@ void generate() {
         // TODO: check "0-dextrous" from definition 23
         // add halt state and halt
         mm.add_tf(mm.cs, mm.t[mm.cp], 1, D('r'), STATE_HALT);
-        if (!mm.is_zdex()) {
+        if (!mm.is_zdex() && mm.steps > N) {
           halting.push_back(mm);
         }
       } 
@@ -210,10 +217,10 @@ void generate() {
 
     // step 5: 9 steps? halt with the 10th
     //printf("%d\n", mm.card());
-    if (mm.card() == N*M-1) {
+    if (mm.card == N*M-1) {
       // add halting to the missing state
-      for (int n = 0; n < N; n++) {
-        for (int m = 0; m < M; m++) {
+      for (int n = 0; n < min(mm.num_states+1, N); n++) {
+        for (int m = 0; m < min(mm.num_symbols+1, M); m++) {
           if (mm.tf[n][m].new_state == STATE_UNDEFINED) {
             mm.add_tf(n, m, 1, D('r'), STATE_HALT);
             halting.push_back(mm);
@@ -228,8 +235,10 @@ void generate() {
     if (mm.run()) {
       ms.push(mm);
     } else {
-      halting.push_back(mm);
-      bb_n = std::max(mm.steps, bb_n);
+      if (mm.steps > N) {
+        halting.push_back(mm);
+        bb_n = max(mm.steps, bb_n);
+      }
     }
   }
 
