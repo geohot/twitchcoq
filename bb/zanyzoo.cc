@@ -14,7 +14,7 @@ using std::priority_queue;
 
 // for 2x3, we expect 2764
 // for 3x2, we expect 3508 (228 for the first)
-// for 4x2, we expect 511145
+// for 4x2, we expect 511145, we get 637433
 
 #define N 4
 #define M 2
@@ -80,6 +80,11 @@ public:
     num_symbols = 0;
   }
 
+  bool will_go_undefined() {
+    transition &ttf = tf[cs][t[cp]];
+    return ttf.new_state == STATE_UNDEFINED;
+  }
+
   void add_tf(int n, int m, int output, int direction, int new_state) {
     num_states = max(num_states, n+1);
     num_symbols = max(num_symbols, m+1);
@@ -124,7 +129,7 @@ public:
     t[cp] = ttf.output;
     cp += ttf.direction;
     cs = ttf.new_state;
-    return cs != STATE_HALT;
+    return cs == STATE_HALT;
   }
 
   /*bool is_zdex() {
@@ -158,6 +163,9 @@ void init() {
 
   // step 1
   mm.add_tf(S('a'), 0, 1, D('r'), S('b'));
+
+  /*mm.add_tf(S('b'), 0, 1, D('l'), S('a')); ms.push(mm);
+  return;*/
 
   // step 2 (eight choices)
   for (int m = 0; m < min(mm.num_symbols+1, M); m++) {
@@ -199,73 +207,72 @@ void generate() {
     ms.pop();
     mut.unlock();
 
-    // failed blank tape, do not store
-    if (mm.steps > 0 && mm.t.is_blank()) {
-      //out.push_back(mm);
-      continue;
-    } 
+    // step 3: execute M on the blank input until...
+    while (true) {
+      transition &ttf = mm.tf[mm.cs][mm.t[mm.cp]];
+      /*printf("%lu -- %lu %lu -- %d: %d %d=%d x out:%d dir:%d ns:%d\n",
+        1+out.size()+ms.size(),
+        out.size(), ms.size(),
+        mm.steps, mm.cs, mm.cp, mm.t[mm.cp],
+        ttf.output, ttf.direction, ttf.new_state);*/
 
-    // bound on number of exec steps exceeded
-    if (mm.steps > 30) {
-      add_out(mm);
-      continue;
-    }
+      // bound on number of exec steps exceeded
+      if (mm.steps > 30) {
+        add_out(mm);
+        break;
+      }
 
-    transition &ttf = mm.tf[mm.cs][mm.t[mm.cp]];
-    /*printf("%lu -- %lu %lu -- %d: %d %d=%d x out:%d dir:%d ns:%d\n",
-      1+out.size()+ms.size(),
-      out.size(), ms.size(),
-      mm.steps, mm.cs, mm.cp, mm.t[mm.cp],
-      ttf.output, ttf.direction, ttf.new_state);*/
-
-    // step 4: about to go to an undefined place!
-    if (ttf.new_state == STATE_UNDEFINED) {
-      // potentially add the halting state
-      if (mm.is_full()) {
-        // TODO: check "0-dextrous" from definition 23
-        // add halt state and halt
-        mm.add_tf(mm.cs, mm.t[mm.cp], 1, D('r'), STATE_HALT);
-        // this will terminate this step, just let it run
-        add_queue(mm);
+      // failed blank tape test, do not store or run
+      if (mm.steps > 0 && mm.t.is_blank()) {
+        //add_out(mm);
+        break;
       } 
-      // add the other states
-      for (int n = 0; n < min(mm.num_states+1, N); n++) {
-        for (int m = 0; m < min(mm.num_symbols+1, M); m++) {
-          for (int d : {-1, 1}) {
-            mm.add_tf(mm.cs, mm.t[mm.cp], m, d, n);
-            add_queue(mm);
+
+      // step 4: about to go to an undefined place! add possible branches
+      if (mm.will_go_undefined()) {
+        // potentially add the halting state
+        if (mm.is_full()) {
+          // TODO: check "0-dextrous" from definition 23
+          // add halt state and halt
+          mm.add_tf(mm.cs, mm.t[mm.cp], 1, D('r'), STATE_HALT);
+          // this will terminate this step, just let it run
+          add_queue(mm);
+        } 
+        // add the other states
+        for (int n = 0; n < min(mm.num_states+1, N); n++) {
+          for (int m = 0; m < min(mm.num_symbols+1, M); m++) {
+            for (int d : {-1, 1}) {
+              mm.add_tf(mm.cs, mm.t[mm.cp], m, d, n);
+              add_queue(mm);
+            }
           }
         }
+        break;
       }
-      continue;
-    }
 
-    // step 5: 9 steps? halt with the 10th
-    //printf("%d\n", mm.card());
-    if (mm.card == N*M-1) {
-      // add halting to the missing state
-      for (int n = 0; n < N; n++) {
-        for (int m = 0; m < M; m++) {
-          if (mm.tf[n][m].new_state == STATE_UNDEFINED) {
-            mm.add_tf(n, m, 1, D('r'), STATE_HALT);
-            // this is unknown if it halts, but it's complete
-            add_out(mm);
+      // step 5: 9 steps? halt with the 10th
+      if (mm.card == N*M-1) {
+        // add halting to the missing state
+        for (int n = 0; n < N; n++) {
+          for (int m = 0; m < M; m++) {
+            if (mm.tf[n][m].new_state == STATE_UNDEFINED) {
+              mm.add_tf(n, m, 1, D('r'), STATE_HALT);
+              // this is unknown if it halts, but it's complete
+              add_out(mm);
 
-            // don't return to main queue
-            //add_queue(mm);
+              // don't return to main queue
+              //add_queue(mm);
+            }
           }
         }
+        break;
       }
-      continue;
-    }
 
-    // run step, add back to queue if no halt
-    if (mm.run()) {
-      // more run please
-      add_queue(mm);
-    } else {
-      // halted
-      add_out(mm);
+      if (mm.run()) {
+        // halted
+        add_out(mm);
+        break;
+      }
     }
   }
 }
