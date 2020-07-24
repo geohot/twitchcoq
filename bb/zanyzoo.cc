@@ -16,7 +16,7 @@ using std::priority_queue;
 // for 3x2, we expect 3508 (228 for the first)
 // for 4x2, we expect 511145, we get 637433
 
-#define N 4
+#define N 5
 #define M 2
 
 #define STATE_HALT -1
@@ -195,6 +195,7 @@ void add_out(machine &mm) {
 
 void generate() {
   machine mm;
+  int bc = 0;
 
   // step 3
   while (true) {
@@ -209,12 +210,15 @@ void generate() {
 
     // step 3: execute M on the blank input until...
     while (true) {
-      transition &ttf = mm.tf[mm.cs][mm.t[mm.cp]];
-      /*printf("%lu -- %lu %lu -- %d: %d %d=%d x out:%d dir:%d ns:%d\n",
-        1+out.size()+ms.size(),
-        out.size(), ms.size(),
-        mm.steps, mm.cs, mm.cp, mm.t[mm.cp],
-        ttf.output, ttf.direction, ttf.new_state);*/
+      if (bc % 10000 == 0) {
+        transition &ttf = mm.tf[mm.cs][mm.t[mm.cp]];
+        printf("%lu -- %lu %lu -- %d: %d %d=%d x out:%d dir:%d ns:%d\n",
+          1+out.size()+ms.size(),
+          out.size(), ms.size(),
+          mm.steps, mm.cs, mm.cp, mm.t[mm.cp],
+          ttf.output, ttf.direction, ttf.new_state);
+      }
+      bc++;
 
       // bound on number of exec steps exceeded
       if (mm.steps > 30) {
