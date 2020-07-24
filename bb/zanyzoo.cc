@@ -1,6 +1,7 @@
 // (State, Input, Output, Direction, NewState)
 #include <vector>
 #include <queue>
+#include <cassert>
 #include <mutex>
 #include <thread>
 using std::vector;
