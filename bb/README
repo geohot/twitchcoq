@@ -11,6 +11,10 @@ Attack Steps
   Goal: a list of all the machines to check, and a spot check that many random machines are obviously equivalent to one on the list
 (put number here)
 
+1b. Rejecting "active" approaches to machine generation
+  Say we only exclude isomorphic machines, how many are left?
+  3,2 is 3+1 * 2 * 2 = base 16 with length 3*2 = 6 -> 16^6 = 16,777,216 -> 3440
+
 2. Exclude all machines that halt with <= 4098 (current ones record)
    Run for 47,176,870 steps
 (put number here)
