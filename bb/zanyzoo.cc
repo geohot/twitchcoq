@@ -133,7 +133,7 @@ public:
     return cs == STATE_HALT;
   }
 
-  /*bool is_zdex() {
+  bool is_zdex() {
     bool ret = true;
     for (int n = 0; n < N; n++) {
       if (tf[n][0].new_state != STATE_UNDEFINED) {
@@ -141,7 +141,7 @@ public:
       }
     }
     return ret;
-  }*/
+  }
 
   int num_states;
   int num_symbols;
@@ -157,7 +157,6 @@ public:
 // thread safe?
 priority_queue<machine> ms;
 vector<machine> out;
-mutex mut;
 
 void init() {
   machine mm;
@@ -183,15 +182,11 @@ void init() {
 }
 
 void add_queue(machine &mm) {
-  mut.lock();
   ms.push(mm);
-  mut.unlock();
 }
 
 void add_out(machine &mm) {
-  mut.lock();
   out.push_back(mm);
-  mut.unlock();
 }
 
 void generate() {
@@ -200,36 +195,33 @@ void generate() {
 
   // step 3
   while (true) {
-    mut.lock();
     if (ms.size() == 0) {
-      mut.unlock();
       break;
     }
     mm = ms.top();
     ms.pop();
-    mut.unlock();
 
     // step 3: execute M on the blank input until...
     while (true) {
-      /*if (bc % 10000 == 0) {
+      if (bc % 10000 == 0) {
         transition &ttf = mm.tf[mm.cs][mm.t[mm.cp]];
         printf("%lu -- %lu %lu -- %d: %d %d=%d x out:%d dir:%d ns:%d\n",
           1+out.size()+ms.size(),
           out.size(), ms.size(),
           mm.steps, mm.cs, mm.cp, mm.t[mm.cp],
           ttf.output, ttf.direction, ttf.new_state);
-      }*/
+      }
       bc++;
 
       // bound on number of exec steps exceeded
-      if (mm.steps > 30) {
+      if (mm.steps > 50) {
         add_out(mm);
         break;
       }
 
       // failed blank tape test, do not store or run
       if (mm.steps > 0 && mm.t.is_blank()) {
-        //add_out(mm);
+        add_out(mm);
         break;
       } 
 
@@ -237,18 +229,21 @@ void generate() {
       if (mm.will_go_undefined()) {
         // potentially add the halting state
         if (mm.is_full()) {
-          // TODO: check "0-dextrous" from definition 23
           // add halt state and halt
           mm.add_tf(mm.cs, mm.t[mm.cp], 1, D('r'), STATE_HALT);
           // this will terminate this step, just let it run
-          add_queue(mm);
+          if (!mm.is_zdex()) {
+            add_queue(mm);
+          }
         } 
         // add the other states
         for (int n = 0; n < min(mm.num_states+1, N); n++) {
           for (int m = 0; m < min(mm.num_symbols+1, M); m++) {
             for (int d : {-1, 1}) {
               mm.add_tf(mm.cs, mm.t[mm.cp], m, d, n);
-              add_queue(mm);
+              if (!mm.is_zdex()) {
+                add_queue(mm);
+              }
             }
           }
         }
@@ -262,6 +257,7 @@ void generate() {
           for (int m = 0; m < M; m++) {
             if (mm.tf[n][m].new_state == STATE_UNDEFINED) {
               mm.add_tf(n, m, 1, D('r'), STATE_HALT);
+
               // this is unknown if it halts, but it's complete
               add_out(mm);
 
@@ -285,18 +281,19 @@ void generate() {
 int main() {
   init();
   
-  vector<thread*> tt;
+  /*vector<thread*> tt;
   for (int i = 0; i < 1; i++) {
     tt.push_back(new thread(generate));
   }
   for (auto t : tt) {
     t->join();
-  }
+  }*/
+  generate();
 
-  //printf("looking at %lu machines\n", out.size());
-  for (auto mm : out) {
+  printf("looking at %lu machines\n", out.size());
+  /*for (auto mm : out) {
     mm.print();
-  }
+  }*/
 }
 
 
