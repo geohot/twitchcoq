@@ -9,7 +9,7 @@ using std::max;
 using std::thread;
 using std::priority_queue;
 
-//#define DEBUG
+#define DEBUG
 
 // total 2x2 -- 3*2*2*4 = 48
 
@@ -17,8 +17,8 @@ using std::priority_queue;
 // for 3x2, we expect 3508 (228 for the first)
 // for 4x2, we expect 511145, we get 637433
 
-#define N 3
-#define M 2
+#define N 2
+#define M 4
 
 #define STATE_HALT -1
 #define STATE_UNDEFINED -2
@@ -223,7 +223,7 @@ void generate() {
       bc++;
 
       // bound on number of exec steps exceeded
-      if (mm.steps > 100) {
+      if (mm.steps > 200) {
         add_out(mm);
         break;
       }
