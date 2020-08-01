@@ -17,8 +17,8 @@ using std::priority_queue;
 // for 3x2, we expect 3508 (228 for the first)
 // for 4x2, we expect 511145, we get 637433
 
-#define N 2
-#define M 3
+#define N 4
+#define M 2
 
 #define STATE_HALT -1
 #define STATE_UNDEFINED -2
@@ -173,13 +173,14 @@ void init() {
   return;*/
 
   // step 2 (eight choices)
-  for (int m = 0; m < min(mm.num_symbols+1, M); m++) {
+  int mM = min(mm.num_symbols+1, M);
+  for (int m = 0; m < mM; m++) {
     mm.add_tf(S('b'), 0, m, D('l'), S('a')); ms.push(mm);
     mm.add_tf(S('b'), 0, m, D('l'), S('b')); ms.push(mm);
   }
 
   if (N >= 3) {
-    for (int m = 0; m < min(mm.num_symbols+1, M); m++) {
+    for (int m = 0; m < mM; m++) {
       mm.add_tf(S('b'), 0, m, D('l'), S('c')); ms.push(mm);
       mm.add_tf(S('b'), 0, m, D('r'), S('c')); ms.push(mm);
     }
@@ -236,17 +237,19 @@ void generate() {
       if (mm.will_go_undefined()) {
         // potentially add the halting state
         if (mm.is_full()) {
+          machine cmm = mm;
           // add halt state and halt
-          mm.add_tf(mm.cs, mm.t[mm.cp], 1, D('r'), STATE_HALT);
+          cmm.add_tf(cmm.cs, cmm.t[cmm.cp], 1, D('r'), STATE_HALT);
           // this will terminate this step, just let it run
-          if (!mm.is_zdex()) {
-            add_out(mm);
+          if (!cmm.is_zdex()) {
+            add_out(cmm);
           }
         } 
         // add the other states
         for (int n = 0; n < min(mm.num_states+1, N); n++) {
           for (int m = 0; m < min(mm.num_symbols+1, M); m++) {
             for (int d : {-1, 1}) {
+              // need to make an early copy
               machine cmm = mm;
               cmm.add_tf(cmm.cs, cmm.t[cmm.cp], m, d, n);
               if (!cmm.is_zdex()) {
