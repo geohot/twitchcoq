@@ -2,14 +2,14 @@
 #include <vector>
 #include <queue>
 #include <cassert>
-#include <mutex>
 #include <thread>
 using std::vector;
 using std::min;
 using std::max;
-using std::mutex;
 using std::thread;
 using std::priority_queue;
+
+//#define DEBUG
 
 // total 2x2 -- 3*2*2*4 = 48
 
@@ -133,14 +133,15 @@ public:
     return cs == STATE_HALT;
   }
 
+  // Definition 23
   bool is_zdex() {
-    bool ret = true;
+    int cnt = 0;
     for (int n = 0; n < N; n++) {
       if (tf[n][0].new_state != STATE_UNDEFINED) {
-        if (tf[n][0].direction != 1) { ret=false; break; }
+        cnt += (tf[n][0].direction == 1);
       }
     }
-    return ret;
+    return cnt == N;
   }
 
   int num_states;
@@ -203,14 +204,16 @@ void generate() {
 
     // step 3: execute M on the blank input until...
     while (true) {
-      if (bc % 10000 == 0) {
-        transition &ttf = mm.tf[mm.cs][mm.t[mm.cp]];
-        printf("%lu -- %lu %lu -- %d: %d %d=%d x out:%d dir:%d ns:%d\n",
-          1+out.size()+ms.size(),
-          out.size(), ms.size(),
-          mm.steps, mm.cs, mm.cp, mm.t[mm.cp],
-          ttf.output, ttf.direction, ttf.new_state);
-      }
+      #ifdef DEBUG
+        if (bc % 10000 == 0) {
+          transition &ttf = mm.tf[mm.cs][mm.t[mm.cp]];
+          printf("%lu -- %lu %lu -- %d: %d %d=%d x out:%d dir:%d ns:%d\n",
+            1+out.size()+ms.size(),
+            out.size(), ms.size(),
+            mm.steps, mm.cs, mm.cp, mm.t[mm.cp],
+            ttf.output, ttf.direction, ttf.new_state);
+        }
+      #endif
       bc++;
 
       // bound on number of exec steps exceeded
@@ -219,7 +222,11 @@ void generate() {
         break;
       }
 
-      // failed blank tape test, do not store or run
+      if (mm.is_zdex()) {
+        break;
+      }
+
+      // failed blank tape test, output the irrelevant machine
       if (mm.steps > 0 && mm.t.is_blank()) {
         add_out(mm);
         break;
@@ -233,7 +240,7 @@ void generate() {
           mm.add_tf(mm.cs, mm.t[mm.cp], 1, D('r'), STATE_HALT);
           // this will terminate this step, just let it run
           if (!mm.is_zdex()) {
-            add_queue(mm);
+            add_out(mm);
           }
         } 
         // add the other states
@@ -279,21 +286,19 @@ void generate() {
 }
 
 int main() {
+  #ifdef DEBUG
+    printf("running on %d %d\n", N, M);
+  #endif
   init();
-  
-  /*vector<thread*> tt;
-  for (int i = 0; i < 1; i++) {
-    tt.push_back(new thread(generate));
-  }
-  for (auto t : tt) {
-    t->join();
-  }*/
   generate();
 
-  printf("looking at %lu machines\n", out.size());
-  /*for (auto mm : out) {
-    mm.print();
-  }*/
+  #ifdef DEBUG
+    printf("looking at %lu machines\n", out.size());
+  #else
+    for (auto mm : out) {
+      mm.print();
+    }
+  #endif
 }
 
 
