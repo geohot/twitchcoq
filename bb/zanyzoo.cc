@@ -9,7 +9,7 @@ using std::max;
 using std::thread;
 using std::priority_queue;
 
-//#define DEBUG
+#define DEBUG
 
 // total 2x2 -- 3*2*2*4 = 48
 
@@ -17,8 +17,8 @@ using std::priority_queue;
 // for 3x2, we expect 3508 (228 for the first)
 // for 4x2, we expect 511145, we get 637433
 
-#define N 3
-#define M 2
+#define N 2
+#define M 3
 
 #define STATE_HALT -1
 #define STATE_UNDEFINED -2
@@ -89,8 +89,10 @@ public:
   void add_tf(int n, int m, int output, int direction, int new_state) {
     num_states = max(num_states, n+1);
     num_symbols = max(num_symbols, m+1);
+
     num_states = max(num_states, new_state+1);
     num_symbols = max(num_symbols, output+1);
+
     assert(new_state != STATE_UNDEFINED);
     card += (tf[n][m].new_state == STATE_UNDEFINED);
 
@@ -144,6 +146,8 @@ public:
     return cnt == N;
   }
 
+  int used_states;
+  int used_symbols;
   int num_states;
   int num_symbols;
   int card;
@@ -222,10 +226,6 @@ void generate() {
         break;
       }
 
-      if (mm.is_zdex()) {
-        break;
-      }
-
       // failed blank tape test, output the irrelevant machine
       if (mm.steps > 0 && mm.t.is_blank()) {
         add_out(mm);
@@ -247,9 +247,10 @@ void generate() {
         for (int n = 0; n < min(mm.num_states+1, N); n++) {
           for (int m = 0; m < min(mm.num_symbols+1, M); m++) {
             for (int d : {-1, 1}) {
-              mm.add_tf(mm.cs, mm.t[mm.cp], m, d, n);
-              if (!mm.is_zdex()) {
-                add_queue(mm);
+              machine cmm = mm;
+              cmm.add_tf(cmm.cs, cmm.t[cmm.cp], m, d, n);
+              if (!cmm.is_zdex()) {
+                add_queue(cmm);
               }
             }
           }
