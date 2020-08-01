@@ -167,12 +167,13 @@ void init() {
   machine mm;
 
   // step 1
+  // note that {'a', 'b'} and {'0', '1'} are in all machines
   mm.add_tf(S('a'), 0, 1, D('r'), S('b'));
 
   /*mm.add_tf(S('b'), 0, 1, D('l'), S('a')); ms.push(mm);
   return;*/
 
-  // step 2 (eight choices)
+  // step 2
   int mM = min(mm.num_symbols+1, M);
   for (int m = 0; m < mM; m++) {
     mm.add_tf(S('b'), 0, m, D('l'), S('a')); ms.push(mm);
@@ -222,7 +223,7 @@ void generate() {
       bc++;
 
       // bound on number of exec steps exceeded
-      if (mm.steps > 50) {
+      if (mm.steps > 100) {
         add_out(mm);
         break;
       }
@@ -237,19 +238,18 @@ void generate() {
       if (mm.will_go_undefined()) {
         // potentially add the halting state
         if (mm.is_full()) {
-          machine cmm = mm;
           // add halt state and halt
-          cmm.add_tf(cmm.cs, cmm.t[cmm.cp], 1, D('r'), STATE_HALT);
+          mm.add_tf(mm.cs, mm.t[mm.cp], 1, D('r'), STATE_HALT);
           // this will terminate this step, just let it run
-          if (!cmm.is_zdex()) {
-            add_out(cmm);
+          if (!mm.is_zdex()) {
+            add_out(mm);
           }
         } 
         // add the other states
         for (int n = 0; n < min(mm.num_states+1, N); n++) {
           for (int m = 0; m < min(mm.num_symbols+1, M); m++) {
             for (int d : {-1, 1}) {
-              // need to make an early copy
+              // need to make an early copy for the num_
               machine cmm = mm;
               cmm.add_tf(cmm.cs, cmm.t[cmm.cp], m, d, n);
               if (!cmm.is_zdex()) {
